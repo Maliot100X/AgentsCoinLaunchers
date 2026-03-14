@@ -1,0 +1,158 @@
+# UBUNTU SERVER SETUP - AgentsCoinLaunchers Telegram Bot 24/7
+
+## Prerequisites
+- Ubuntu 20.04/22.04 server
+- Node.js 18+ installed
+- Git installed
+
+## Step-by-Step Setup
+
+### 1. Connect to Server
+```bash
+ssh username@your-server-ip
+```
+
+### 2. Clone Repository
+```bash
+cd /home/your-user
+git clone https://github.com/Maliot100X/AgentsCoinLaunchers.git
+cd AgentsCoinLaunchers
+```
+
+### 3. Install Dependencies
+```bash
+# Install packages for each module
+cd packages/bot
+npm install
+cd ../api
+npm install
+cd ../web
+npm install
+```
+
+### 4. Configure Environment Variables
+Create `.env` file in each package:
+
+**packages/bot/.env:**
+```env
+TELEGRAM_BOT_TOKEN=YOUR_TELEGRAM_BOT_TOKEN
+NEXT_PUBLIC_API_URL=http://localhost:3001
+DATABASE_URL=mongodb://localhost:27017/agentscoinlaunchers
+```
+
+**packages/api/.env:**
+```env
+DATABASE_URL=mongodb://localhost:27017/agentscoinlaunchers
+PORT=3001
+BAGS_API_KEY=your_bags_api_key_here
+PLATFORM_WALLET_ADDRESS=your_platform_wallet_address
+SOLANA_RPC_URL=https://api.mainnet-beta.solana.com
+```
+
+**packages/web/.env:**
+```env
+NEXT_PUBLIC_API_URL=http://localhost:3001
+```
+
+### 5. Install PM2 (Process Manager)
+```bash
+sudo npm install -g pm2
+```
+
+### 6. Start API Server
+```bash
+cd packages/api
+pm2 start index.js --name "agentscoin-api"
+```
+
+### 7. Start Telegram Bot
+```bash
+cd packages/bot
+pm2 start index.js --name "agentscoin-bot"
+```
+
+### 8. Start Web Server (if needed)
+```bash
+cd packages/web
+npm run build
+pm2 start "npm start" --name "agentscoin-web"
+```
+
+### 9. Save PM2 Processes
+```bash
+pm2 save
+```
+
+### 10. Setup Startup Script
+```bash
+pm2 startup
+# Copy and run the command output by the above command
+```
+
+### 11. Verify Everything is Running
+```bash
+pm2 status
+pm2 logs agentscoin-bot
+pm2 logs agentscoin-api
+```
+
+## Managing the Services
+
+### View Logs
+```bash
+pm2 logs agentscoin-bot
+pm2 logs agentscoin-api
+```
+
+### Stop a Service
+```bash
+pm2 stop agentscoin-bot
+```
+
+### Restart a Service
+```bash
+pm2 restart agentscoin-bot
+```
+
+### Delete a Service
+```bash
+pm2 delete agentscoin-bot
+```
+
+### Update from GitHub
+```bash
+cd /home/your-user/AgentsCoinLaunchers
+git pull origin main
+pm2 restart all
+```
+
+## Auto-Restart on Failure
+PM2 automatically restarts crashed processes. To customize:
+```bash
+pm2 start index.js --name "agentscoin-bot" --exp-backoff-restart-delay=100
+```
+
+## Firewall Configuration
+Allow traffic on the required ports:
+```bash
+sudo ufw allow 3001/tcp  # API port
+sudo ufw allow 3000/tcp  # Web port (if hosting web)
+```
+
+## Troubleshooting
+
+### Bot not starting?
+- Check TELEGRAM_BOT_TOKEN is set correctly
+- Check port 3001 is free
+- View logs: `pm2 logs agentscoin-bot`
+
+### API not responding?
+- Check MongoDB is running: `sudo systemctl status mongod`
+- Check port 3001: `netstat -tulpn | grep 3001`
+
+### PM2 not starting on boot?
+- Re-run: `pm2 startup` and copy the command
+- Ensure PM2 is installed globally
+
+## Contact Support
+For issues, check the README.md in the repository.
