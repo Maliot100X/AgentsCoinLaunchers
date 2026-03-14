@@ -1,0 +1,15 @@
+UBUNTU SERVER SETUP - Telegram Bot 24/7
+
+1. SSH into server
+2. Clone repo: git clone https://github.com/Maliot100X/AgentsCoinLaunchers
+3. cd AgentsCoinLaunchers
+4. npm install
+5. Create .env with:
+   TELEGRAM_BOT_TOKEN=your_token_here
+6. Install PM2: npm install -g pm2
+7. Start bot: pm2 start packages/bot/index.js --name "telegram-bot"
+8. Save: pm2 save
+9. Setup startup: pm2 startup
+10. Check status: pm2 status
+
+Bot will restart automatically on reboot.
