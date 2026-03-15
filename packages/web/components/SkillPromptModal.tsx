@@ -2,10 +2,16 @@
 
 import { useState } from "react";
 import type { TradingSkill } from "./SkillCard";
+import type { ImprovedSkill } from "./ImprovedSkillCard";
 
 interface SkillPromptModalProps {
-  skill: TradingSkill | null;
+  skill: (TradingSkill | ImprovedSkill) | null;
   onClose: () => void;
+}
+
+// Type guard to check if it's a TradingSkill
+function isTradingSkill(skill: any): skill is TradingSkill {
+  return "fullDescription" in skill && "averageReturn" in skill.metrics;
 }
 
 export default function SkillPromptModal({ skill, onClose }: SkillPromptModalProps) {
@@ -18,6 +24,9 @@ export default function SkillPromptModal({ skill, onClose }: SkillPromptModalPro
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
+
+  const isTradingType = isTradingSkill(skill);
+  const description = isTradingType ? skill.fullDescription : skill.documentation;
 
   return (
     <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
@@ -44,7 +53,7 @@ export default function SkillPromptModal({ skill, onClose }: SkillPromptModalPro
           {/* Description */}
           <div>
             <h3 className="text-lg font-bold mb-2">📝 Description</h3>
-            <p className="text-slate-300 leading-relaxed">{skill.fullDescription}</p>
+            <p className="text-slate-300 leading-relaxed">{description ? description.split("\n")[0] : skill.description}</p>
           </div>
 
           {/* Metrics */}
@@ -58,12 +67,20 @@ export default function SkillPromptModal({ skill, onClose }: SkillPromptModalPro
                 </div>
               </div>
               <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-4">
-                <div className="text-sm text-slate-400 mb-2">Avg Return</div>
-                <div className="text-2xl font-bold text-cyan-400">{skill.metrics.averageReturn}%</div>
+                <div className="text-sm text-slate-400 mb-2">
+                  {isTradingType ? "Avg Return" : "Adoption"}
+                </div>
+                <div className="text-2xl font-bold text-cyan-400">
+                  {isTradingType ? (skill as TradingSkill).metrics.averageReturn : (skill as ImprovedSkill).metrics.adoptionRate}%
+                </div>
               </div>
               <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-4">
-                <div className="text-sm text-slate-400 mb-2">Active Trades</div>
-                <div className="text-2xl font-bold text-pink-400">{skill.metrics.activeTrades}</div>
+                <div className="text-sm text-slate-400 mb-2">
+                  {isTradingType ? "Active" : "Users"}
+                </div>
+                <div className="text-2xl font-bold text-pink-400">
+                  {isTradingType ? (skill as TradingSkill).metrics.activeTrades : (skill as ImprovedSkill).metrics.userCount}K
+                </div>
               </div>
             </div>
           </div>
