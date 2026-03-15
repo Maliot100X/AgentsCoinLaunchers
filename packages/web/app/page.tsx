@@ -5,7 +5,7 @@ import { useWallet } from "@solana/wallet-adapter-react";
 import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 import TokenLaunch from "../components/TokenLaunch";
 import SwapInterface from "../components/SwapInterface";
-import SkillsMarketplace from "../components/SkillsMarketplace";
+import SkillsShowcase from "../components/SkillsShowcase";
 import Dashboard from "../components/Dashboard";
 import Leaderboard from "../components/Leaderboard";
 import Link from "next/link";
@@ -224,7 +224,7 @@ export default function Home() {
 
             {activeTab === 'launch' && <TokenLaunch />}
             {activeTab === 'swap' && <SwapInterface />}
-            {activeTab === 'skills' && <SkillsMarketplace />}
+            {activeTab === 'skills' && <SkillsShowcase />}
             {activeTab === 'dashboard' && <Dashboard />}
             {activeTab === 'leaderboard' && <Leaderboard />}
           </div>

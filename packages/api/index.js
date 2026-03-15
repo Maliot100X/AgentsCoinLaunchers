@@ -754,7 +754,7 @@ app.get('/api/stats', async (req, res) => {
 });
 
 /**
- * GET /api/leaderboard - Get top agents by earnings and token launches
+ * GET /api/leaderboard - Get top agents by earnings and token launches with Bags.fm data
  */
 app.get('/api/leaderboard', async (req, res) => {
   try {
@@ -768,29 +768,89 @@ app.get('/api/leaderboard', async (req, res) => {
       sortQuery = { createdAt: -1 };
     }
 
+    // Try to fetch real data from Bags.fm API
+    let bagsData = {};
+    let bagsIntegrationStatus = 'offline';
+    
+    try {
+      // Fetch top token creators from Bags - using simple GET request
+      // Example: https://api.bags.fm/api/v1/top-creators?limit=10
+      const https = require('https');
+      
+      await new Promise((resolve, reject) => {
+        https.get('https://api.bags.fm/api/v1/tokens?limit=' + Math.min(limit, 100), 
+          {
+            headers: {
+              'User-Agent': 'AgentsCoinLaunchers/1.0',
+              'Accept': 'application/json'
+            },
+            timeout: 8000
+          },
+          (response) => {
+            let data = '';
+            response.on('data', chunk => data += chunk);
+            response.on('end', () => {
+              try {
+                const bagsTokens = JSON.parse(data);
+                // Map Bags data to creators
+                if (bagsTokens.data && Array.isArray(bagsTokens.data)) {
+                  bagsTokens.data.forEach(token => {
+                    if (token.creator) {
+                      if (!bagsData[token.creator]) {
+                        bagsData[token.creator] = { tokensCreated: 0, totalVolume: 0 };
+                      }
+                      bagsData[token.creator].tokensCreated += 1;
+                      bagsData[token.creator].totalVolume += (token.volume_24h || 0);
+                    }
+                  });
+                }
+                bagsIntegrationStatus = 'live';
+                resolve();
+              } catch (e) {
+                reject(e);
+              }
+            });
+          }
+        ).on('error', reject);
+      }).catch(err => {
+        console.warn('⚠️  Bags.fm API call failed:', err.message);
+        bagsIntegrationStatus = 'fallback';
+      });
+    } catch (bagsErr) {
+      console.warn('⚠️  Could not fetch Bags.fm data:', bagsErr.message);
+      bagsIntegrationStatus = 'fallback';
+    }
+
+    // Fetch from local database
     const agents = await User.find()
       .select('telegramUsername telegramId feeReceiverWallet totalEarnings tokensLaunched createdAt')
       .sort(sortQuery)
       .limit(limit)
       .lean();
 
-    // Transform data for frontend
-    const leaderboard = agents.map((agent, index) => ({
-      rank: index + 1,
-      id: agent._id.toString(),
-      username: agent.telegramUsername || `User_${agent.telegramId}`,
-      telegramId: agent.telegramId,
-      wallet: agent.feeReceiverWallet,
-      earnings: agent.totalEarnings || 0,
-      launches: agent.tokensLaunched || 0,
-      joinedDate: agent.createdAt
-    }));
+    // Transform data for frontend with Bags enrichment
+    const leaderboard = agents.map((agent, index) => {
+      const bagsInfo = bagsData[agent.feeReceiverWallet] || {};
+      return {
+        rank: index + 1,
+        id: agent._id.toString(),
+        username: agent.telegramUsername || `User_${agent.telegramId}`,
+        telegramId: agent.telegramId,
+        wallet: agent.feeReceiverWallet,
+        earnings: agent.totalEarnings || 0,
+        launches: agent.tokensLaunched || 0,
+        joinedDate: agent.createdAt,
+        bagsCreated: bagsInfo.tokensCreated || 0,
+        bagsVolume: bagsInfo.totalVolume || 0
+      };
+    });
 
     res.json({
       leaderboard,
       total: await User.countDocuments(),
       limit,
-      sort
+      sort,
+      bagsIntegration: bagsIntegrationStatus
     });
   } catch (error) {
     console.error('❌ Get leaderboard error:', error);
