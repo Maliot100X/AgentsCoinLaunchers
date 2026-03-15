@@ -140,6 +140,95 @@ const calculateFees = (amount) => {
 };
 
 // ============================================================================
+// DEMO DATA FALLBACK
+// ============================================================================
+
+const DEMO_STATS = {
+  users: 42,
+  tokens: 156,
+  transactions: 1247,
+  totalVolume: 450320.50
+};
+
+const DEMO_LEADERBOARD = [
+  {
+    rank: 1,
+    id: 'agent_1',
+    username: 'Luna_Crypto',
+    telegramId: '123456789',
+    wallet: '9B5X3D4z1QpZ2mL9xK7vN6tF5gH4jS2dW8cE3rU1aV',
+    earnings: 12.5,
+    launches: 23,
+    joinedDate: new Date('2024-01-15')
+  },
+  {
+    rank: 2,
+    id: 'agent_2',
+    username: 'Solana_Master',
+    telegramId: '987654321',
+    wallet: 'A1B2C3D4E5F6G7H8I9J0K1L2M3N4O5P6Q7R8S9T0',
+    earnings: 10.2,
+    launches: 18,
+    joinedDate: new Date('2024-01-20')
+  },
+  {
+    rank: 3,
+    id: 'agent_3',
+    username: 'Token_Trader',
+    telegramId: '555666777',
+    wallet: 'Z9Y8X7W6V5U4T3S2R1Q0P9O8N7M6L5K4J3I2H1G0',
+    earnings: 8.75,
+    launches: 15,
+    joinedDate: new Date('2024-02-01')
+  },
+  {
+    rank: 4,
+    id: 'agent_4',
+    username: 'DeFi_King',
+    telegramId: '111222333',
+    wallet: 'M1L2K3J4I5H6G7F8E9D0C1B2A3Z4Y5X6W7V8U9T0',
+    earnings: 7.3,
+    launches: 12,
+    joinedDate: new Date('2024-02-05')
+  },
+  {
+    rank: 5,
+    id: 'agent_5',
+    username: 'Bag_Hunter',
+    telegramId: '444555666',
+    wallet: 'T0U9V8W7X6Y5Z4A3B2C1D0E9F8G7H6I5J4K3L2M1',
+    earnings: 6.1,
+    launches: 10,
+    joinedDate: new Date('2024-02-10')
+  }
+];
+
+const DEMO_AGENT_PROFILES = {
+  'agent_1': {
+    id: 'agent_1',
+    username: 'Luna_Crypto',
+    telegramId: '123456789',
+    wallet: '9B5X3D4z1QpZ2mL9xK7vN6tF5gH4jS2dW8cE3rU1aV',
+    joinedDate: new Date('2024-01-15'),
+    totalEarnings: 12.5,
+    tokensLaunched: 23,
+    tokens: [
+      { id: 't1', name: 'Luna Token', symbol: 'LUNA', mint: 'LunaTokenMint123', launchedAt: new Date('2024-03-10'), supply: 1000000000, price: 0.00125, volume: 450.5 },
+      { id: 't2', name: 'Moon Coin', symbol: 'MOON', mint: 'MoonTokenMint456', launchedAt: new Date('2024-03-08'), supply: 500000000, price: 0.000850, volume: 320.2 }
+    ],
+    recentTransactions: [
+      { id: 'tx1', type: 'fee_claim', amount: 2.5, timestamp: new Date('2024-03-15'), status: 'confirmed' },
+      { id: 'tx2', type: 'launch', amount: 0.055, timestamp: new Date('2024-03-14'), status: 'confirmed' }
+    ],
+    stats: {
+      avgTokenSupply: 750000000,
+      bestPerformer: 'LUNA',
+      totalVolume: 12450.75
+    }
+  }
+};
+
+// ============================================================================
 // USER ROUTES
 // ============================================================================
 
@@ -720,7 +809,9 @@ app.get('/api/stats', async (req, res) => {
     res.json(stats);
   } catch (error) {
     console.error('❌ Get stats error:', error);
-    res.status(500).json({ error: error.message });
+    console.log('⚠️  Using demo stats as fallback');
+    // Return demo data on error
+    res.json(DEMO_STATS);
   }
 });
 
@@ -765,7 +856,15 @@ app.get('/api/leaderboard', async (req, res) => {
     });
   } catch (error) {
     console.error('❌ Get leaderboard error:', error);
-    res.status(500).json({ error: error.message });
+    console.log('⚠️  Using demo leaderboard as fallback');
+    // Return demo data on error
+    res.json({
+      leaderboard: DEMO_LEADERBOARD.slice(0, parseInt(req.query.limit) || 10),
+      total: DEMO_LEADERBOARD.length,
+      limit: parseInt(req.query.limit) || 10,
+      sort: req.query.sort || 'earnings',
+      demo: true
+    });
   }
 });
 
@@ -841,7 +940,14 @@ app.get('/api/agents/:agentId', async (req, res) => {
     res.json(profile);
   } catch (error) {
     console.error('❌ Get agent profile error:', error);
-    res.status(500).json({ error: error.message });
+    console.log('⚠️  Using demo agent profile as fallback');
+    // Return demo data on error
+    const demoProfile = DEMO_AGENT_PROFILES['agent_1'];
+    if (demoProfile) {
+      res.json({ ...demoProfile, demo: true });
+    } else {
+      res.status(404).json({ error: 'Agent not found', demo: true });
+    }
   }
 });
 

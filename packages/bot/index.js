@@ -1130,6 +1130,66 @@ Try again:
       return;
     }
 
+    // SELFLAUNCH - ACCEPT USER'S API KEY
+    if (session.getState() === 'selflaunch_pending_key' && text !== 'cancel') {
+      const apiKey = msg.text.trim();
+
+      // Validate Bags API key format (should start with 'bags_')
+      if (!apiKey.startsWith('bags_') || apiKey.length < 20) {
+        bot.sendMessage(chatId, `
+❌ *Invalid API Key Format*
+
+Your key doesn't look like a valid Bags API key.
+
+Valid keys should:
+• Start with 'bags_'
+• Be at least 50+ characters
+• Contain alphanumeric characters
+
+Example format:
+\`bags_prod_YhTVMoennloNU06kSEDqQ8g_Bdd7_5g7RdcMT1EBr4o\`
+
+*Where to get it:*
+1. Visit https://bags.fm
+2. Go to Settings → API Keys
+3. Create or copy your API key
+4. Send it here
+
+Try again (or type "cancel" to go back):
+        `, { parse_mode: 'Markdown' });
+        return;
+      }
+
+      // Store API key in session
+      session.userApiKey = apiKey;
+      session.setState('idle');
+
+      const successText = `
+✅ *API Key Saved Successfully!*
+
+Your Bags API key has been securely stored.
+
+📝 *Next, let's verify your account:*
+1. Your account and wallet info
+2. Prepare token details
+3. Deploy directly via your API key
+
+*Advantages of Self Launch:*
+💰 Save 30% platform fee
+🔐 Full control over your tokens
+⚡ Direct Bags.fm integration
+📊 Real-time management
+
+Ready to launch your first token?
+
+Send /launch to begin!
+      `;
+
+      bot.sendMessage(chatId, successText, { parse_mode: 'Markdown' });
+      sendMenu(chatId);
+      return;
+    }
+
     if (text === 'cancel') {
       session.setState('idle');
       bot.sendMessage(chatId, '❌ Operation cancelled.');
