@@ -2,6 +2,8 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 require('dotenv').config();
+const fs = require('fs');
+const path = require('path');
 
 // Import Bags tracker
 const bagsTracker = require('./bags-tracker');
@@ -714,71 +716,7 @@ app.get('/api/fees/:wallet', async (req, res) => {
 });
 
 // ============================================================================
-// SKILLS ROUTES
-// ============================================================================
-
-/**
- * GET /api/skills - Get all published skills
- */
-app.get('/api/skills', async (req, res) => {
-  try {
-    const skills = await Skill.find({ published: true }).limit(50);
-
-    res.json(skills);
-  } catch (error) {
-    console.error('❌ Get skills error:', error);
-    res.status(500).json({ error: error.message });
-  }
-});
-
-/**
- * POST /api/skills - Create new skill
- */
-app.post('/api/skills', async (req, res) => {
-  try {
-    const { name, description, category, author, code, documentation, usage } = req.body;
-
-    const skill = new Skill({
-      name,
-      description,
-      category,
-      author,
-      code,
-      documentation,
-      usage,
-      published: false
-    });
-
-    await skill.save();
-
-    res.json({ success: true, skill });
-  } catch (error) {
-    console.error('❌ Create skill error:', error);
-    res.status(500).json({ error: error.message });
-  }
-});
-
-/**
- * GET /api/skills/:id - Get specific skill
- */
-app.get('/api/skills/:id', async (req, res) => {
-  try {
-    const skill = await Skill.findById(req.params.id);
-
-    if (!skill) {
-      return res.status(404).json({ error: 'Skill not found' });
-    }
-
-    res.json(skill);
-  } catch (error) {
-    console.error('❌ Get skill error:', error);
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// ============================================================================
-// HEALTH & UTILITY ROUTES
-// ============================================================================
+// UTILITY ROUTES
 
 /**
  * GET /health - Health check
@@ -951,6 +889,90 @@ app.get('/api/agents/:agentId', async (req, res) => {
   }
 });
 
+// ============================================================================
+// UTILITY ROUTES
+// ============================================================================
+
+
+/**
+ * GET /api/skills - Get all available skills
+ */
+app.get('/api/skills', async (req, res) => {
+  try {
+    const skillsDir = path.join(__dirname, '../../docs/skills');
+    
+    if (!fs.existsSync(skillsDir)) {
+      return res.json({ skills: [], message: 'Skills directory not found' });
+    }
+
+    const files = fs.readdirSync(skillsDir).filter(f => f.endsWith('.md'));
+    const skills = [];
+
+    for (const file of files) {
+      try {
+        const filePath = path.join(skillsDir, file);
+        const content = fs.readFileSync(filePath, 'utf-8');
+        
+        // Extract title and basic info from markdown
+        const titleMatch = content.match(/^# (.+)$/m);
+        const overviewMatch = content.match(/## Overview\s*\n([\s\S]*?)(?=##|$)/);
+        const featuresMatch = content.match(/## Features\s*\n([\s\S]*?)(?=##|$)/);
+        
+        const skillId = file.replace('.md', '');
+        const title = titleMatch ? titleMatch[1] : skillId;
+        const overview = overviewMatch ? overviewMatch[1].trim().split('\n')[0] : 'No description available';
+        const features = featuresMatch ? featuresMatch[1].split('\n').filter(l => l.trim().startsWith('- ')) : [];
+
+        skills.push({
+          id: skillId,
+          name: title,
+          description: overview,
+          features: features.length,
+          fileName: file,
+          size: content.length
+        });
+      } catch (err) {
+        console.error(`Error reading skill file ${file}:`, err);
+      }
+    }
+
+    res.json({ skills, total: skills.length });
+  } catch (error) {
+    console.error('❌ Get skills error:', error);
+    res.status(500).json({ error: 'Failed to retrieve skills', message: error.message });
+  }
+});
+
+/**
+ * GET /api/skills/:skillId - Get specific skill content
+ */
+app.get('/api/skills/:skillId', async (req, res) => {
+  try {
+    const { skillId } = req.params;
+    const skillPath = path.join(__dirname, '../../docs/skills', `${skillId}.md`);
+    
+    if (!fs.existsSync(skillPath)) {
+      return res.status(404).json({ error: `Skill '${skillId}' not found` });
+    }
+
+    const content = fs.readFileSync(skillPath, 'utf-8');
+    
+    // Parse markdown for structure
+    const titleMatch = content.match(/^# (.+)$/m);
+    const overviewMatch = content.match(/## Overview\s*\n([\s\S]*?)(?=##|$)/);
+    
+    res.json({
+      id: skillId,
+      name: titleMatch ? titleMatch[1] : skillId,
+      content: content,
+      overview: overviewMatch ? overviewMatch[1].trim() : '',
+      mcp_ready: true
+    });
+  } catch (error) {
+    console.error('❌ Get skill error:', error);
+    res.status(500).json({ error: 'Failed to retrieve skill', message: error.message });
+  }
+});
 // ============================================================================
 // BAGS TRACKER ROUTES
 // ============================================================================
