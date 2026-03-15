@@ -1,0 +1,983 @@
+================================================================================
+COMPLETE BUILD PROMPT - AGENTSCOINLAUNCHERS PLATFORM
+================================================================================
+BUILD THIS ENTIRE PROJECT FROM 0% TO 100% EXACTLY AS SPECIFIED BELOW
+================================================================================
+
+PROJECT NAME: AgentsCoinLaunchers (Bags.fm Token Launch Platform with Agent Skills)
+GOAL: Build a complete token launching platform integrated with Bags.fm API, 
+      Telegram bot, leaderboard, and 6 AI agent skills for token management
+
+================================================================================
+CRITICAL API KEYS & CREDENTIALS (DO NOT MISS THESE)
+================================================================================
+
+BAGS.FM API:
+- API Key: bags_prod_YhTVMoennloNU06kSEDqQ8g_Bdd7_5g7RdcMT1EBr4o
+- Base URL: https://public-api-v2.bags.fm/api/v1
+- Header: x-api-key: [API_KEY]
+
+TELEGRAM BOT:
+- Bot Token: 8772350833:AAHxpD5s8u9Z6Lp8cWriV2-m3bg-hJUIEes
+- Channel ID: -1003635356299
+- Channel Link: https://t.me/TheSistersAgentLauncherSignals
+- Bot Link: https://t.me/TheSistersAgentLauncherBot
+
+SOLANA:
+- RPC URL: https://api.mainnet-beta.solana.com
+- RPC WebSocket: wss://api.mainnet-beta.solana.com
+- Network: mainnet-beta
+
+PLATFORM WALLETS:
+- Platform Fee Wallet: Dgk9bcm6H6LVaamyXQWeNCXh2HuTFoE4E7Hu7Pw1aiPx (receives 0.055 SOL upfront)
+- Partner Key Wallet: asC9NcTpRAJQ56WppDTHyBtEm5qHyh7tyyBiafiaYvN (earns 25% of fees from volume)
+
+DATABASE:
+- MongoDB URL: mongodb://localhost:27017/agentscoinlaunchers
+- Or MongoDB Atlas: mongodb+srv://username:password@cluster.mongodb.net/agentscoinlaunchers
+
+================================================================================
+FEE STRUCTURE (CRITICAL - DO NOT MODIFY)
+================================================================================
+
+UPFRONT LAUNCH FEE:
+- Amount: 0.055 SOL (flat, one-time)
+- Receiver: Dgk9bcm6H6LVaamyXQWeNCXh2HuTFoE4E7Hu7Pw1aiPx
+- Purpose: Platform revenue, must be verified before token launch
+
+EARNED FEES DISTRIBUTION (from token trading):
+- Creator/User: 70% of earned fees
+- Platform (Partner Key): 25% of earned fees (automatic via partner key)
+- Other Allocations: 5% (customizable)
+
+TOTAL: 70% + 25% + 5% = 100%
+
+================================================================================
+PROJECT STRUCTURE
+================================================================================
+
+agentscoinlaunchers/
+├── packages/
+│   ├── web/                          # Next.js Frontend (Port 3000)
+│   │   ├── app/
+│   │   │   ├── page.tsx              # Home page with skills showcase
+│   │   │   ├── layout.tsx            # Root layout
+│   │   │   ├── globals.css           # Global styles
+│   │   │   ├── leaderboard/
+│   │   │   │   └── page.tsx          # Real leaderboard from Bags.fm API
+│   │   │   ├── skills/
+│   │   │   │   └── page.tsx          # All 6 agent skills showcase
+│   │   │   ├── agent/
+│   │   │   │   └── [agentId]/
+│   │   │   │       └── page.tsx      # Individual agent profile
+│   │   │   ├── docs/
+│   │   │   │   └── page.tsx          # Documentation
+│   │   │   ├── legal/
+│   │   │   │   ├── privacy/
+│   │   │   │   ├── security/
+│   │   │   │   └── terms/
+│   │   │   └── api/
+│   │   │       └── leaderboard/
+│   │   │           └── route.ts      # API endpoint fetching real Bags.fm data
+│   │   ├── components/
+│   │   │   ├── ImprovedSkillsData.ts # ALL 6 AGENT SKILLS WITH COMPLETE IMPLEMENTATION
+│   │   │   ├── ImprovedSkillCard.tsx
+│   │   │   ├── SkillsMarketplaceImproved.tsx
+│   │   │   ├── SkillPromptModal.tsx
+│   │   │   └── SkillsShowcase.tsx
+│   │   ├── package.json
+│   │   ├── tsconfig.json
+│   │   ├── next.config.js
+│   │   └── .env.local
+│   │
+│   ├── bot/                          # Telegram Bot (Node.js)
+│   │   ├── src/
+│   │   │   ├── index.ts              # Bot entry point
+│   │   │   ├── handlers/             # Telegram command handlers
+│   │   │   └── services/             # Business logic services
+│   │   ├── package.json
+│   │   ├── tsconfig.json
+│   │   └── .env.local
+│   │
+│   └── api/                          # Backend API (Express, Port 3001)
+│       ├── src/
+│       │   ├── index.ts              # API server entry point
+│       │   ├── routes/               # API routes
+│       │   └── services/             # Business logic
+│       ├── package.json
+│       ├── tsconfig.json
+│       └── .env.local
+
+├── .env.local                        # Root environment variables
+├── package.json                      # Root monorepo config
+├── tsconfig.json                     # TypeScript config
+├── vercel.json                       # Vercel deployment config
+└── COMPLETE_BUILD_PROMPT.txt         # This file
+
+================================================================================
+ENVIRONMENT VARIABLES (.env.local)
+================================================================================
+
+ROOT .env.local:
+================
+# TELEGRAM BOT CONFIGURATION
+TELEGRAM_BOT_TOKEN=8772350833:AAHxpD5s8u9Z6Lp8cWriV2-m3bg-hJUIEes
+TELEGRAM_CHANNEL_ID=-1003635356299
+
+# DATABASE CONFIGURATION
+DATABASE_URL=mongodb://localhost:27017/agentscoinlaunchers
+
+# BAGS.FM CONFIGURATION
+BAGS_API_KEY=bags_prod_YhTVMoennloNU06kSEDqQ8g_Bdd7_5g7RdcMT1EBr4o
+PLATFORM_WALLET_ADDRESS=Dgk9bcm6H6LVaamyXQWeNCXh2HuTFoE4E7Hu7Pw1aiPx
+
+# SOLANA CONFIGURATION
+SOLANA_RPC_URL=https://api.mainnet-beta.solana.com
+SOLANA_RPC_WS=wss://api.mainnet-beta.solana.com
+
+# API CONFIGURATION
+NEXT_PUBLIC_API_URL=http://localhost:3001
+PORT=3001
+
+# ENVIRONMENT
+NODE_ENV=development
+
+# BAGS.FM TRACKING CONFIGURATION
+BAGS_TRACKING_ENABLED=true
+BAGS_DETECTION_INTERVAL=5000
+BAGS_TRENDING_INTERVAL=60000
+
+WEB .env.local (packages/web/.env.local):
+==========================================
+NEXT_PUBLIC_API_URL=http://localhost:3001
+NEXT_PUBLIC_SOLANA_RPC_URL=https://api.mainnet-beta.solana.com
+NEXT_PUBLIC_SOLANA_CLUSTER=mainnet-beta
+NEXT_PUBLIC_PLATFORM_WALLET=Dgk9bcm6H6LVaamyXQWeNCXh2HuTFoE4E7Hu7Pw1aiPx
+NEXT_PUBLIC_PLATFORM_NAME=AgentsCoinLaunchers
+NEXT_PUBLIC_PLATFORM_FEE_PERCENT=25
+NEXT_PUBLIC_USER_FEE_PERCENT=70
+NEXT_PUBLIC_PARTNER_FEE_PERCENT=5
+NODE_ENV=development
+NEXT_PUBLIC_TELEGRAM_CHANNEL=https://t.me/TheSistersAgentLauncherSignals
+NEXT_PUBLIC_TELEGRAM_BOT=https://t.me/TheSistersAgentLauncherBot
+
+BOT .env.local (packages/bot/.env.local):
+===========================================
+TELEGRAM_BOT_TOKEN=8772350833:AAHxpD5s8u9Z6Lp8cWriV2-m3bg-hJUIEes
+TELEGRAM_CHANNEL_ID=-1003635356299
+PLATFORM_WALLET_ADDRESS=Dgk9bcm6H6LVaamyXQWeNCXh2HuTFoE4E7Hu7Pw1aiPx
+BAGS_API_KEY=bags_prod_YhTVMoennloNU06kSEDqQ8g_Bdd7_5g7RdcMT1EBr4o
+NEXT_PUBLIC_API_URL=http://localhost:3001
+NODE_ENV=development
+
+================================================================================
+DEPENDENCIES & PACKAGES
+================================================================================
+
+ROOT package.json:
+- Monorepo structure using npm workspaces
+- Scripts: build, dev, test
+
+WEB package.json (Next.js 14):
+- next@14.2.35
+- react@18
+- react-dom@18
+- typescript
+- tailwindcss (for styling)
+- @solana/web3.js
+- @bagsfm/bags-sdk
+
+BOT package.json (Node.js Telegram):
+- node-telegram-bot-api
+- mongoose (MongoDB)
+- typescript
+- dotenv
+
+API package.json (Express):
+- express
+- typescript
+- cors
+- dotenv
+- mongoose
+- @solana/web3.js
+
+================================================================================
+CORE FEATURES TO BUILD
+================================================================================
+
+1. HOMEPAGE (page.tsx)
+   - Hero section with "Launch Tokens with AI Agents"
+   - Feature highlights
+   - 6 Skills showcase cards
+   - Call to action buttons linking to /skills and /leaderboard
+
+2. SKILLS PAGE (/skills)
+   - Display all 6 agent skills
+   - Each skill shows:
+     * Name, description, icon
+     * Rating, download count, status
+     * Agent prompt (copyable)
+     * Code example
+     * Documentation
+     * "Use Skill" button
+
+3. LEADERBOARD PAGE (/leaderboard)
+   - Real-time data from Bags.fm API
+   - Shows top agents/creators ranked by:
+     * Earnings (default sort)
+     * Number of launches
+     * Recent activity
+   - Columns: Rank, Agent Name, Earnings (SOL), Launches, Volume, Last Launch, View Button
+   - Fetches from /api/leaderboard endpoint
+
+4. LEADERBOARD API ENDPOINT (/api/leaderboard)
+   - Route: GET /api/leaderboard?sort=earnings&limit=50
+   - Fetches token-launch/feed from Bags.fm API
+   - Fetches creator info for each token using /token-launch/creator/v3
+   - Groups tokens by creator wallet
+   - Calculates:
+     * Total launches per creator
+     * Total volume
+     * Total fees earned
+     * Creator's 70% share
+   - Returns sorted JSON array
+
+5. AGENT PROFILE PAGE (/agent/[agentId])
+   - Show individual agent details
+   - List all tokens launched by agent
+   - Earnings breakdown
+   - Recent activity
+
+================================================================================
+6 AGENT SKILLS (MOST CRITICAL PART)
+================================================================================
+
+ALL 6 SKILLS MUST BE IN: packages/web/components/ImprovedSkillsData.ts
+
+SKILL 1: TOKEN LAUNCHER
+========================
+ID: token-launcher
+Icon: 🚀
+Category: Core Launch
+
+AGENT PROMPT:
+"You are the Token Launcher agent for Bags.fm. Your CRITICAL responsibility is to:
+
+PAYMENT REQUIREMENT (MUST DO FIRST):
+Before launching ANY token, you MUST:
+1. Inform user: 'We charge 0.055 SOL flat fee to launch your token'
+2. Provide platform fee wallet: Dgk9bcm6H6LVaamyXQWeNCXh2HuTFoE4E7Hu7Pw1aiPx
+3. User sends 0.055 SOL to platform wallet
+4. WAIT for transaction confirmation on Solscan
+5. ONLY THEN proceed with launch
+
+TOKEN LAUNCH FLOW:
+1. Use Bags API Key: bags_prod_YhTVMoennloNU06kSEDqQ8g_Bdd7_5g7RdcMT1EBr4o
+2. Create token metadata (name, symbol, description, image)
+3. Setup fee sharing config with partner key (creator gets 70%, platform gets 25%, other 5%)
+4. Launch token on Solana mainnet
+5. Return token mint address and Bags.fm URL
+
+REQUIRED PARAMETERS FROM USER:
+- Token Name (e.g., 'My Awesome Token')
+- Token Symbol (3-10 characters, e.g., 'MAT')
+- Total Supply (e.g., 1,000,000,000 tokens)
+- Description (what the token is for)
+- Image URL (project logo or image)
+- Twitter (optional, @handle)
+- Website (optional, https://...)
+- Telegram (optional, t.me/... link)
+
+VALIDATION RULES:
+- Symbol must be 3-10 alphanumeric characters
+- Supply must be between 1M and 1T tokens
+- Image URL must be publicly accessible
+- Description should be 20+ characters
+- All social links must be valid URLs or handles
+
+SUCCESS CRITERIA:
+✓ Payment of 0.055 SOL received and confirmed
+✓ Token metadata created successfully
+✓ Fee sharing config setup with partner key (70/25/5 split)
+✓ Token launched on Solana mainnet
+✓ Token mint address returned
+✓ Token URL on Bags.fm provided
+✓ Notification sent to user with all details
+
+ERROR HANDLING:
+- If payment not received: 'Payment pending - send 0.055 SOL to [wallet]'
+- If invalid params: Return specific validation error
+- If API fails: 'Launching token... please wait' and retry
+- If metadata upload fails: Check image URL validity
+
+CRITICAL: DO NOT LAUNCH WITHOUT PAYMENT CONFIRMATION
+Inform user: 'Your token is ready to launch! Please confirm you sent 0.055 SOL to Dgk9bcm6H6LVaamyXQWeNCXh2HuTFoE4E7Hu7Pw1aiPx'
+
+ACTIVATION:
+'Launch token [NAME] with symbol [SYMBOL]' or 'Create new token'"
+
+CONSTANTS (in code):
+const BAGS_API_KEY = "bags_prod_YhTVMoennloNU06kSEDqQ8g_Bdd7_5g7RdcMT1EBr4o";
+const PLATFORM_FEE_WALLET = "Dgk9bcm6H6LVaamyXQWeNCXh2HuTFoE4E7Hu7Pw1aiPx"; // Receives 0.055 SOL upfront
+const PARTNER_KEY = "asC9NcTpRAJQ56WppDTHyBtEm5qHyh7tyyBiafiaYvN"; // Earns 25% of fees from volume
+const LAUNCH_FEE_LAMPORTS = 55_000_000; // 0.055 SOL
+
+FEE DISTRIBUTION IN CODE:
+const feeClaimers = [
+  { user: this.keypair.publicKey, userBps: 7000 }, // 70% to creator
+  { user: new PublicKey(PARTNER_KEY), userBps: 2500 }, // 25% to platform partner
+  // Remaining 5% can be configured for other allocations
+];
+
+USAGE: "Launch tokens in seconds with 0.055 SOL flat fee. Automatic fee sharing (70/25/5 with partner), Solscan verification, and Bags.fm integration."
+
+RATING: 4.9/5
+DOWNLOADS: 1250
+STATUS: active
+SUCCESS_RATE: 98%
+ADOPTION_RATE: 94%
+USER_COUNT: 850
+
+
+SKILL 2: FEE CLAIMER
+====================
+ID: fee-claimer
+Icon: 💰
+Category: Finance
+
+AGENT PROMPT:
+"You are the Fee Claimer agent for Bags.fm. Your role is to help users claim earned SOL fees from token launches.
+
+HOW IT WORKS:
+1. Every token launch generates fees as tokens are traded
+2. Creators earn 70% of all fees (if they launched with 0.055 SOL payment)
+3. Fees accumulate in real-time on Bags.fm
+4. User can claim fees at any time with 0% extra cost
+5. Fees go directly to their Solana wallet
+
+WHAT TO DO:
+1. Ask user which token mint they want to claim fees from
+2. Use Bags API: bags_prod_YhTVMoennloNU06kSEDqQ8g_Bdd7_5g7RdcMT1EBr4o
+3. Fetch claimable positions for that token
+4. Show how much SOL is available to claim
+5. Generate claim transaction
+6. User signs with their wallet
+7. Claim is submitted to Solana
+8. Fees arrive in wallet
+
+CLAIMABLE POSITIONS TYPES:
+- Virtual Pool Fees: From trading before DAMM graduation
+- DAMM V2 Pool Fees: From trading after DAMM graduation
+- Custom Fee Vault: For tokens with custom fee splitting
+
+DISPLAY TO USER:
+'💰 Claimable Fees: 2.5 SOL
+🪙 Token: [symbol]
+📊 Source: Virtual Pool + DAMM Pool
+⏱️ Claimed before: 1.2 SOL
+🔗 Transaction will be signed by your wallet'
+
+ACTIVATION:
+'Claim my fees' or 'Show claimable positions' or 'Claim fees from token [MINT]'"
+
+USAGE: "Claim earned SOL fees from token launches. Tracks virtual pool fees and DAMM pool fees. Zero additional cost."
+
+RATING: 4.8/5
+DOWNLOADS: 890
+STATUS: active
+SUCCESS_RATE: 99%
+ADOPTION_RATE: 87%
+USER_COUNT: 625
+
+
+SKILL 3: TRENDING DETECTOR
+===========================
+ID: trending-detector
+Icon: 📈
+Category: Analytics
+
+AGENT PROMPT:
+"You are the Trending Detector agent for Bags.fm. Your role is to identify and alert users about trending tokens.
+
+HOW TO DETECT TRENDING:
+1. Use Bags API: bags_prod_YhTVMoennloNU06kSEDqQ8g_Bdd7_5g7RdcMT1EBr4o
+2. Fetch /token-launch/feed for recent tokens
+3. Analyze:
+   - Trading volume (24h)
+   - Number of trades
+   - Holder growth
+   - Buy pressure
+4. Calculate Trending Score = (Volume × 0.35) + (Trades × 0.30) + (Holder_Growth × 0.20) + (Buy_Pressure × 0.15)
+
+ALERTS USER OF:
+✓ New token launches
+✓ Volume spikes
+✓ Holder concentration < 70% (low rug risk)
+✓ Active communities
+✓ Trading momentum
+
+DISPLAY:
+'🚀 TRENDING: [Token Name]
+📊 Volume: 250 SOL (24h)
+💹 Trades: 1,250
+👥 Holders: 450
+⚡ Trend Score: 8.7/10
+🔗 https://bags.fm/[mint]'
+
+ACTIVATION:
+'Show trending tokens' or 'What's trending?' or 'Top movers'"
+
+USAGE: "Real-time trending token detection with volume analysis, holder metrics, and rug-pull risk assessment."
+
+RATING: 4.7/5
+DOWNLOADS: 750
+STATUS: active
+SUCCESS_RATE: 96%
+ADOPTION_RATE: 82%
+USER_COUNT: 580
+
+
+SKILL 4: PORTFOLIO MANAGER
+===========================
+ID: portfolio-manager
+Icon: 💼
+Category: Portfolio
+
+AGENT PROMPT:
+"You are the Portfolio Manager agent for Bags.fm. Your role is to help users track and manage their token portfolios.
+
+PORTFOLIO FEATURES:
+1. Track multiple wallets
+2. Show token holdings
+3. Calculate portfolio value in SOL
+4. Track earnings from launched tokens
+5. Show portfolio performance
+
+WHAT TO DO:
+1. Ask user for wallet address
+2. Fetch token balances
+3. Get current prices from Bags
+4. Calculate total value
+5. Show breakdown by token
+6. Calculate earned fees
+
+PORTFOLIO DISPLAY:
+'💼 Portfolio Summary
+📊 Total Value: 45.5 SOL
+💰 Earned Fees: 12.3 SOL
+🎯 Tokens Held: 8
+
+Token Breakdown:
+1. MyToken (MTK) - 50,000 tokens = 15.5 SOL
+2. AIAgent (AA) - 100,000 tokens = 20.2 SOL
+3. ...
+
+Recent Earnings:
+- 2.5 SOL from MTK (today)
+- 1.8 SOL from AA (yesterday)
+- ...'
+
+ACTIVATION:
+'Show my portfolio' or 'Track wallet [address]' or 'Portfolio summary'"
+
+USAGE: "Track multiple wallets, token balances, earned fees, portfolio value, and performance metrics in real-time."
+
+RATING: 4.8/5
+DOWNLOADS: 920
+STATUS: active
+SUCCESS_RATE: 97%
+ADOPTION_RATE: 89%
+USER_COUNT: 710
+
+
+SKILL 5: PRICE ANALYZER
+========================
+ID: price-analyzer
+Icon: 📊
+Category: Analytics
+
+AGENT PROMPT:
+"You are the Price Analyzer agent for Bags.fm. Your role is to provide detailed token price analysis and trading signals.
+
+ANALYSIS FEATURES:
+1. Current price in SOL
+2. 24h price change
+3. Price chart (30 days)
+4. Technical indicators:
+   - RSI (Relative Strength Index)
+   - MA (Moving Average)
+   - MACD (Moving Average Convergence Divergence)
+5. Trading signals
+
+RSI SIGNALS:
+- RSI > 70: Overbought (potential pullback)
+- RSI < 30: Oversold (potential bounce)
+- 30-70: Normal range
+
+DISPLAY:
+'📊 Price Analysis: [Token]
+💲 Current: 0.025 SOL
+📈 24h Change: +15.3%
+🔄 30d High: 0.032 SOL | Low: 0.018 SOL
+
+Technical:
+RSI: 65 (Approaching Overbought)
+MA20: 0.023 SOL
+Signal: ⚠️ CAUTION - Consider Taking Profits
+
+Volume: 500 SOL (24h)
+Trend: Bullish'
+
+ACTIVATION:
+'Analyze [symbol]' or 'Price for [token]' or 'Trading signals'"
+
+USAGE: "Real-time price analysis with RSI, moving averages, MACD, historical data, and actionable trading signals."
+
+RATING: 4.9/5
+DOWNLOADS: 1100
+STATUS: active
+SUCCESS_RATE: 95%
+ADOPTION_RATE: 91%
+USER_COUNT: 780
+
+
+SKILL 6: TOKEN SWAPPER
+=======================
+ID: token-swapper
+Icon: 🔄
+Category: Trading
+
+AGENT PROMPT:
+"You are the Token Swapper agent for Bags.fm. Your role is to help users swap tokens efficiently with best prices.
+
+SWAP FEATURES:
+1. Get price quotes for token pairs
+2. Find best prices across pools
+3. Calculate slippage
+4. Execute swaps
+5. Optimize for gas fees
+
+SWAP FLOW:
+1. User specifies: 'Swap 5 SOL for [token]' or vice versa
+2. Get quote from /trade/quote endpoint
+3. Show:
+   - Input amount
+   - Output amount
+   - Price per unit
+   - Slippage %
+   - Estimated gas fee
+4. User approves
+5. Execute swap with /trade/swap
+6. Return transaction signature
+
+DISPLAY:
+'🔄 Swap Quote
+📥 You send: 5 SOL
+📤 You get: 25,000 MTK
+💱 Rate: 1 SOL = 5,000 MTK
+⚠️ Slippage: 0.5%
+⛽ Gas Fee: ~0.0005 SOL
+✅ Approve to proceed'
+
+ACTIVATION:
+'Swap 5 SOL for [token]' or 'Trade [amount] [token1] for [token2]'"
+
+USAGE: "Instant token swaps with best price quotes, slippage protection, multi-route optimization, and low gas fees."
+
+RATING: 4.9/5
+DOWNLOADS: 1300
+STATUS: active
+SUCCESS_RATE: 99%
+ADOPTION_RATE: 93%
+USER_COUNT: 890
+
+================================================================================
+TELEGRAM BOT FEATURES
+================================================================================
+
+BOT COMMAND HANDLERS:
+
+/start - Welcome message with platform overview
+/launch - Trigger token launcher skill
+/claim - Trigger fee claimer skill
+/trending - Show trending tokens
+/portfolio - Show user's portfolio
+/analyze - Analyze token prices
+/swap - Swap tokens
+/leaderboard - Show top agents
+/help - Help menu
+
+BOT INLINE PAYMENTS:
+- Send payment prompts via Telegram
+- Generate QR code for Solana payments
+- Verify payment on blockchain
+- Confirm transaction hash
+
+BOT BROADCASTS:
+- Trending token alerts
+- New token launches from agents
+- Fee earnings notifications
+- Community announcements to: -1003635356299
+
+MONGODB COLLECTIONS:
+- users (Telegram users)
+- launches (token launches)
+- transactions (all transactions)
+- earnings (fee earnings)
+- wallets (user wallets)
+
+================================================================================
+FRONTEND COMPONENTS
+================================================================================
+
+COMPONENTS TO CREATE:
+
+1. ImprovedSkillCard.tsx
+   - Display individual skill card
+   - Props: skill data, onUseSkill callback
+   - Shows: icon, name, rating, downloads, description
+   - Buttons: View Details, Use Skill, Copy Prompt
+
+2. SkillPromptModal.tsx
+   - Modal showing full agent prompt
+   - Copyable prompt text
+   - Code example
+   - Documentation
+   - API configuration
+
+3. SkillsShowcase.tsx
+   - Grid layout of all 6 skills
+   - Filter by category
+   - Search functionality
+   - Featured skills section
+
+4. SkillsMarketplaceImproved.tsx
+   - Full marketplace interface
+   - Sort by rating, downloads, recent
+   - Detailed view with documentation
+   - Integration examples
+
+================================================================================
+API ENDPOINTS
+================================================================================
+
+GET /api/leaderboard
+- Query params: sort=earnings|launches|recent, limit=50
+- Returns: LeaderboardResponse with AgentStats array
+- Fetches from Bags.fm token-launch/feed
+- Calculates real metrics from blockchain data
+
+POST /api/launch
+- Body: { name, symbol, supply, description, imageUrl, twitter?, website?, telegram?, paymentTxHash }
+- Returns: { mint, metadata, signature, url }
+- Verifies 0.055 SOL payment first
+- Calls Bags API to launch token
+- Sets up fee sharing with partner key
+
+POST /api/claim
+- Body: { tokenMint, userWallet }
+- Returns: { claimableAmount, transactions, signature }
+- Fetches claimable positions from Bags API
+- Generates claim transactions
+- Returns ready-to-sign txs
+
+GET /api/tokens/trending
+- Returns: { trending: Token[] }
+- Fetches from Bags API token-launch/feed
+- Calculates trending score
+- Sorted by volume and momentum
+
+GET /api/tokens/[mint]
+- Returns: { token: Token, creator: Creator, volume: number, fees: number }
+- Fetches token details from Bags API
+- Gets creator info from /token-launch/creator/v3
+- Calculates volume and fees
+
+GET /api/portfolio/[wallet]
+- Returns: { wallet, totalValue, tokens: Token[], earnings: number }
+- Fetches token balances for wallet
+- Gets current prices
+- Calculates total value and earnings
+
+================================================================================
+CRITICAL IMPLEMENTATION DETAILS
+================================================================================
+
+WALLET PAYMENT VERIFICATION:
+- User must send 0.055 SOL to: Dgk9bcm6H6LVaamyXQWeNCXh2HuTFoE4E7Hu7Pw1aiPx
+- Payment must be verified on Solana blockchain
+- Use getParsedTransaction to check transfer amount
+- Minimum 0.055 SOL required before proceeding
+
+FEE SHARING CONFIGURATION:
+- Use Bags SDK: @bagsfm/bags-sdk
+- Create config with 3 fee claimers:
+  1. User wallet: 7000 bps (70%)
+  2. Partner key: 2500 bps (25%)
+  3. Other: 500 bps (5%) - optional
+- Partner key must be: asC9NcTpRAJQ56WppDTHyBtEm5qHyh7tyyBiafiaYvN
+
+LEADERBOARD DATA FETCHING:
+- Fetch from: /token-launch/feed (list all recent tokens)
+- For each token, fetch: /token-launch/creator/v3?tokenMint=[MINT]
+- Group tokens by creator wallet
+- Calculate: launch count, total volume, total fees
+- Creator earns: 70% of fees (fees × 0.7)
+- Cache results for 60 seconds
+- Dynamic route (not static)
+
+TELEGRAM BOT INTEGRATION:
+- Use node-telegram-bot-api package
+- Listen to user messages and commands
+- Send transaction prompts for payments
+- Broadcast token announcements to channel
+- Store user data in MongoDB
+- Handle inline queries and callbacks
+
+SOLANA INTEGRATION:
+- Use @solana/web3.js for transactions
+- Use @bagsfm/bags-sdk for token operations
+- Verify transactions on mainnet-beta
+- Use mainnet RPC: https://api.mainnet-beta.solana.com
+- Generate signatures for fee sharing configs
+
+================================================================================
+DATABASE SCHEMA (MongoDB)
+================================================================================
+
+USERS COLLECTION:
+{
+  _id: ObjectId,
+  telegramId: number,
+  username: string,
+  wallet: string,
+  joinedDate: Date,
+  earnings: number,
+  launches: number
+}
+
+LAUNCHES COLLECTION:
+{
+  _id: ObjectId,
+  tokenMint: string,
+  name: string,
+  symbol: string,
+  supply: number,
+  creator: string,
+  creatorWallet: string,
+  description: string,
+  imageUrl: string,
+  twitter: string,
+  website: string,
+  telegram: string,
+  launchDate: Date,
+  paymentTxHash: string,
+  launchTxHash: string,
+  status: "pending" | "launched" | "failed",
+  volume: number,
+  fees: number,
+  bagsUrl: string
+}
+
+TRANSACTIONS COLLECTION:
+{
+  _id: ObjectId,
+  type: "payment" | "launch" | "claim" | "swap",
+  userWallet: string,
+  amount: number,
+  tokenMint: string,
+  txHash: string,
+  timestamp: Date,
+  status: "pending" | "confirmed" | "failed"
+}
+
+EARNINGS COLLECTION:
+{
+  _id: ObjectId,
+  userWallet: string,
+  tokenMint: string,
+  amount: number,
+  percentage: number,
+  source: "virtual_pool" | "damm_v2" | "custom",
+  claimedDate: Date,
+  claimTxHash: string
+}
+
+================================================================================
+BUILD CHECKLIST
+================================================================================
+
+PROJECT SETUP:
+☐ Create monorepo with npm workspaces
+☐ Create packages/web, packages/bot, packages/api directories
+☐ Setup TypeScript for all packages
+☐ Setup .env.local files with all credentials
+☐ Install all dependencies
+
+WEB APP (Next.js):
+☐ Create app structure (page.tsx, layout.tsx, globals.css)
+☐ Create all pages: /, /leaderboard, /skills, /agent/[id], /docs, /legal/*
+☐ Create components: ImprovedSkillCard, SkillPromptModal, SkillsShowcase, etc.
+☐ Create ImprovedSkillsData.ts with ALL 6 SKILLS (MOST IMPORTANT)
+☐ Create /api/leaderboard route that fetches from Bags.fm
+☐ Implement real-time leaderboard from Bags.fm API data
+☐ Add Tailwind CSS styling
+☐ Make responsive design
+
+API ENDPOINTS (packages/api):
+☐ Setup Express server on port 3001
+☐ Create GET /api/leaderboard endpoint
+☐ Create POST /api/launch endpoint (verify payment first)
+☐ Create POST /api/claim endpoint
+☐ Create GET /api/tokens/trending endpoint
+☐ Create GET /api/tokens/[mint] endpoint
+☐ Create GET /api/portfolio/[wallet] endpoint
+☐ Implement Bags.fm API integration
+☐ Implement payment verification on Solana
+☐ Setup MongoDB connection
+☐ Create database collections
+
+TELEGRAM BOT (packages/bot):
+☐ Setup bot with token: 8772350833:AAHxpD5s8u9Z6Lp8cWriV2-m3bg-hJUIEes
+☐ Create command handlers: /start, /launch, /claim, /trending, /portfolio, /analyze, /swap, /leaderboard, /help
+☐ Implement inline payment requests
+☐ Implement transaction verification
+☐ Setup MongoDB integration
+☐ Create broadcast to channel: -1003635356299
+☐ Add error handling
+
+CRITICAL WALLETS & KEYS (DO NOT FORGET):
+☐ Platform Fee Wallet: Dgk9bcm6H6LVaamyXQWeNCXh2HuTFoE4E7Hu7Pw1aiPx
+☐ Partner Key: asC9NcTpRAJQ56WppDTHyBtEm5qHyh7tyyBiafiaYvN
+☐ Bags API Key: bags_prod_YhTVMoennloNU06kSEDqQ8g_Bdd7_5g7RdcMT1EBr4o
+☐ Telegram Bot: 8772350833:AAHxpD5s8u9Z6Lp8cWriV2-m3bg-hJUIEes
+☐ Telegram Channel: -1003635356299
+
+TESTING:
+☐ Build web app: npm run build
+☐ Test homepage loads
+☐ Test all 6 skills display
+☐ Test leaderboard fetches real data from Bags.fm
+☐ Test API endpoints
+☐ Test Telegram bot commands
+☐ Test payment verification
+☐ Test token launching flow
+
+DEPLOYMENT:
+☐ Setup environment on production server
+☐ Deploy web app to Vercel or similar
+☐ Deploy API to Node.js server
+☐ Deploy Telegram bot
+☐ Setup MongoDB Atlas for production
+☐ Test all endpoints on production
+☐ Monitor logs and errors
+
+================================================================================
+KEY POINTS - DO NOT MISS THESE
+================================================================================
+
+1. PAYMENT IS CRITICAL:
+   - 0.055 SOL MUST go to: Dgk9bcm6H6LVaamyXQWeNCXh2HuTFoE4E7Hu7Pw1aiPx
+   - Payment MUST be verified before launching
+   - Use getParsedTransaction to verify on Solana
+   - This is platform revenue, non-negotiable
+
+2. FEE DISTRIBUTION IS CRITICAL:
+   - Creator: 70% of earned fees
+   - Platform (Partner Key): 25% of earned fees
+   - Other: 5% (customizable)
+   - Use partner key: asC9NcTpRAJQ56WppDTHyBtEm5qHyh7tyyBiafiaYvN
+   - NOT 70/30 split, it's 70/25/5
+
+3. BAGS.FM API IS CRITICAL:
+   - API Key: bags_prod_YhTVMoennloNU06kSEDqQ8g_Bdd7_5g7RdcMT1EBr4o
+   - Header: x-api-key (not Authorization)
+   - Base URL: https://public-api-v2.bags.fm/api/v1
+   - Must fetch real leaderboard data from /token-launch/feed
+   - Must fetch creator info from /token-launch/creator/v3
+
+4. ALL 6 SKILLS MUST BE COMPLETE:
+   - Token Launcher (with full payment verification)
+   - Fee Claimer (with Bags API integration)
+   - Trending Detector (with volume analysis)
+   - Portfolio Manager (with multi-wallet support)
+   - Price Analyzer (with RSI and technical indicators)
+   - Token Swapper (with quote and execution)
+
+5. TELEGRAM BOT IS CRITICAL:
+   - Bot Token: 8772350833:AAHxpD5s8u9Z6Lp8cWriV2-m3bg-hJUIEes
+   - Channel: -1003635356299
+   - Must handle all 8 commands
+   - Must verify payments
+   - Must broadcast announcements
+
+6. LEADERBOARD MUST BE REAL:
+   - Not demo/fake data
+   - Fetch from Bags.fm /token-launch/feed
+   - Group by creator wallet
+   - Calculate real metrics
+   - Cache for 60 seconds
+   - Dynamic route (not static prerender)
+
+7. DATABASE IS REQUIRED:
+   - MongoDB (local or Atlas)
+   - Store launches, earnings, transactions, users, wallets
+   - Use mongoose for schema validation
+   - Create proper indexes for queries
+
+================================================================================
+QUICK START COMMANDS
+================================================================================
+
+# Install dependencies
+npm install
+
+# Develop all packages
+npm run dev
+
+# Build web app
+cd packages/web && npm run build
+
+# Build API
+cd packages/api && npm run build
+
+# Test web
+cd packages/web && npm run dev
+
+# Test API
+cd packages/api && npm run dev
+
+# Test Telegram bot
+cd packages/bot && npm run dev
+
+# View at:
+# Web: http://localhost:3000
+# API: http://localhost:3001
+# Telegram: @TheSistersAgentLauncherBot
+
+================================================================================
+FINAL NOTES
+================================================================================
+
+This is a COMPLETE, PRODUCTION-READY project specification. Everything needed to 
+build the AgentsCoinLaunchers platform is documented above.
+
+Key success factors:
+1. Correct wallet addresses (DO NOT change them)
+2. Correct fee distribution (70/25/5, not any other split)
+3. Real data from Bags.fm API (not demo data)
+4. Complete Telegram bot integration
+5. All 6 agent skills fully implemented
+6. Proper payment verification before any launch
+
+If you follow this prompt exactly, you will build a fully functional, production-ready
+token launching platform with AI agent skills, real leaderboard data, and full Telegram
+bot integration.
+
+ESTIMATED BUILD TIME: 40-60 hours for experienced developer
+
+Good luck! 🚀
+
+================================================================================
+END OF COMPLETE BUILD PROMPT
+================================================================================
