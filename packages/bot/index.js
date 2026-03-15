@@ -910,7 +910,18 @@ Once processed, you'll receive a confirmation message.
     }
 
     if (data === 'wallet_add') {
-      bot.sendMessage(chatId, '➕ Visit the website to add custom wallets: http://localhost:3000/wallet');
+      session.setState('wallet_add_pending');
+      bot.sendMessage(chatId, `
+➕ *Add New Wallet*
+
+Send your Solana wallet address:
+
+• Format: 43-44 character base58 string
+• Example: \`9B5X3D4z1QpZ2mL9xK7vN6tF5gH4jS2dW8cE3rU1aV\`
+• This wallet will receive fees from your token launches
+
+Or type \`cancel\` to go back.
+      `, { parse_mode: 'Markdown' });
     }
 
     if (data === 'wallet_stats') {
@@ -1018,7 +1029,8 @@ Try again with correct transaction hash:
     // SETTINGS - FEE RECEIVER WALLET
     if (session.getState() === 'settings_receiver' && text !== 'cancel') {
       // Validate Solana address format (43-44 chars, base58)
-      const addressRegex = /^[1-9A-HJ-NP-Z]{43,44}$/;
+      // Base58 includes: 123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz
+      const addressRegex = /^[1-9A-HJ-NP-Za-km-z]{43,44}$/;
 
       if (addressRegex.test(msg.text.trim())) {
         session.feeReceiverWallet = msg.text.trim();
@@ -1054,7 +1066,61 @@ Send /launch to get started!
 Format should be:
 • 43-44 characters
 • Use letters and numbers only
-• Start with number 1-9 or A-H, J-N, P-Z
+• Base58 characters (no 0, O, I, l)
+
+Example: \`9B5X3D4z1QpZ2mL9xK7vN6tF5gH4jS2dW8cE3rU1aV\`
+
+Try again:
+        `, { parse_mode: 'Markdown' });
+      }
+      return;
+    }
+
+    // WALLET ADD - ADD NEW WALLET ADDRESS
+    if (session.getState() === 'wallet_add_pending' && text !== 'cancel') {
+      // Validate Solana address format (43-44 chars, base58)
+      // Base58 includes: 123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz
+      const addressRegex = /^[1-9A-HJ-NP-Za-km-z]{43,44}$/;
+
+      if (addressRegex.test(msg.text.trim())) {
+        const newWallet = msg.text.trim();
+        session.setState('idle');
+
+        // Add wallet to user's wallets list (if implementing wallet management)
+        // For now, we'll just set it as the fee receiver
+        session.feeReceiverWallet = newWallet;
+
+        // Save to API
+        try {
+          await registerOrUpdateUser(userId, `tg_${userId}`, newWallet);
+        } catch (err) {
+          console.error('❌ Wallet save failed:', err);
+        }
+
+        const successText = `
+✅ *Wallet Added Successfully!*
+
+Your new wallet:
+\`${newWallet}\`
+
+This wallet will receive 70% of all your token launch fees.
+🚀 Ready to launch tokens and earn fees!
+
+Send /launch to get started!
+        `;
+
+        bot.sendMessage(chatId, successText, { parse_mode: 'Markdown' });
+        sendMenu(chatId);
+      } else {
+        bot.sendMessage(chatId, `
+❌ *Invalid Wallet Address*
+
+"${msg.text}" doesn't look like a valid Solana address.
+
+Format should be:
+• 43-44 characters
+• Use letters and numbers only
+• Base58 characters (no 0, O, I, l)
 
 Example: \`9B5X3D4z1QpZ2mL9xK7vN6tF5gH4jS2dW8cE3rU1aV\`
 
