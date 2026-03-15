@@ -3,26 +3,37 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
-interface LeaderboardEntry {
-  rank: number;
-  id: string;
-  username: string;
-  telegramId: number;
+interface TokenLaunch {
+  name: string;
+  symbol: string;
+  tokenMint: string;
+  creatorWallet: string;
+  creatorName?: string;
+  volume: number;
+  fees: number;
+  userShare: number; // 70% of fees
+  launchDate: string;
+  status: string;
+}
+
+interface AgentStats {
   wallet: string;
-  earnings: number;
-  launches: number;
-  joinedDate: string;
+  name: string;
+  launchCount: number;
+  totalVolume: number;
+  totalFees: number;
+  totalEarnings: number; // User's 70% share
+  lastLaunchDate: string;
+  tokens: TokenLaunch[];
 }
 
 interface LeaderboardResponse {
-  leaderboard: LeaderboardEntry[];
+  leaderboard: AgentStats[];
   total: number;
-  limit: number;
-  sort: string;
 }
 
 export default function LeaderboardPage() {
-  const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
+  const [leaderboard, setLeaderboard] = useState<AgentStats[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<'earnings' | 'launches' | 'recent'>('earnings');
@@ -135,51 +146,47 @@ export default function LeaderboardPage() {
                     <th className="text-left p-4 text-slate-300 font-bold">Agent</th>
                     <th className="text-right p-4 text-slate-300 font-bold">💰 Earnings</th>
                     <th className="text-right p-4 text-slate-300 font-bold">🚀 Launches</th>
-                    <th className="text-right p-4 text-slate-300 font-bold">Avg/Launch</th>
-                    <th className="text-left p-4 text-slate-300 font-bold">Joined</th>
+                    <th className="text-right p-4 text-slate-300 font-bold">Volume</th>
+                    <th className="text-left p-4 text-slate-300 font-bold">Last Launch</th>
                     <th className="text-center p-4 text-slate-300 font-bold">Action</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {leaderboard.map((entry) => (
+                  {leaderboard.map((entry, index) => (
                     <tr
-                      key={entry.id}
+                      key={entry.wallet}
                       className="border-b border-slate-700 hover:bg-slate-700/30 transition"
                     >
                       <td className="p-4">
                         <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-yellow-500 to-yellow-600 font-bold text-sm">
-                          {entry.rank <= 3 ? ['🥇', '🥈', '🥉'][entry.rank - 1] : entry.rank}
+                          {index <= 2 ? ['🥇', '🥈', '🥉'][index] : index + 1}
                         </div>
                       </td>
                       <td className="p-4">
                         <div>
-                          <p className="font-bold text-white">{entry.username}</p>
+                          <p className="font-bold text-white">{entry.name}</p>
                           <p className="text-xs text-slate-400 font-mono">
                             {entry.wallet.slice(0, 8)}...{entry.wallet.slice(-6)}
                           </p>
                         </div>
                       </td>
                       <td className="p-4 text-right">
-                        <p className="font-bold text-blue-400">{formatSOL(entry.earnings)}</p>
+                        <p className="font-bold text-blue-400">{formatSOL(entry.totalEarnings)}</p>
                       </td>
                       <td className="p-4 text-right">
-                        <p className="font-bold text-green-400">{entry.launches}</p>
+                        <p className="font-bold text-green-400">{entry.launchCount}</p>
                       </td>
                       <td className="p-4 text-right">
-                        <p className="text-sm text-slate-300">
-                          {entry.launches > 0
-                            ? formatSOL(entry.earnings / entry.launches)
-                            : '—'}
-                        </p>
+                        <p className="text-sm text-slate-300">{formatSOL(entry.totalVolume)}</p>
                       </td>
                       <td className="p-4 text-left">
                         <p className="text-sm text-slate-400">
-                          {formatDate(entry.joinedDate)}
+                          {formatDate(entry.lastLaunchDate)}
                         </p>
                       </td>
                       <td className="p-4 text-center">
                         <Link
-                          href={`/agent/${entry.id}`}
+                          href={`/agent/${entry.wallet}`}
                           className="inline-block bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded text-sm font-bold transition"
                         >
                           View
@@ -204,8 +211,8 @@ export default function LeaderboardPage() {
           <ul className="text-slate-300 space-y-1 text-sm">
             <li>• <strong>Earnings:</strong> Total SOL earned from 70% of token launch fees</li>
             <li>• <strong>Launches:</strong> Number of tokens successfully launched</li>
-            <li>• <strong>Avg/Launch:</strong> Average earnings per token launched</li>
-            <li>• Click "View" to see detailed agent profile, tokens, and transactions</li>
+            <li>• <strong>Volume:</strong> Total trading volume across all launched tokens</li>
+            <li>• Click "View" to see detailed agent profile, tokens, and earnings breakdown</li>
           </ul>
         </div>
       </div>

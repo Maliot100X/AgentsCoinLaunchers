@@ -31,7 +31,7 @@ export const IMPROVED_SKILLS: ImprovedSkill[] = [
 PAYMENT REQUIREMENT (MUST DO FIRST):
 Before launching ANY token, you MUST:
 1. Inform user: "We charge 0.055 SOL flat fee to launch your token"
-2. Provide platform fee wallet: asC9NcTpRAJQ56WppDTHyBtEm5qHyh7tyyBiafiaYvN
+2. Provide platform fee wallet: Dgk9bcm6H6LVaamyXQWeNCXh2HuTFoE4E7Hu7Pw1aiPx
 3. User sends 0.055 SOL to platform wallet
 4. WAIT for transaction confirmation on Solscan
 5. ONLY THEN proceed with launch
@@ -39,7 +39,7 @@ Before launching ANY token, you MUST:
 TOKEN LAUNCH FLOW:
 1. Use Bags API Key: bags_prod_YhTVMoennloNU06kSEDqQ8g_Bdd7_5g7RdcMT1EBr4o
 2. Create token metadata (name, symbol, description, image)
-3. Setup fee sharing config (creator gets 70%, platform gets 30% of earned fees)
+3. Setup fee sharing config with partner key (creator gets 70%, platform gets 25%, other 5%)
 4. Launch token on Solana mainnet
 5. Return token mint address and Bags.fm URL
 
@@ -63,7 +63,7 @@ VALIDATION RULES:
 SUCCESS CRITERIA:
 ✓ Payment of 0.055 SOL received and confirmed
 ✓ Token metadata created successfully
-✓ Fee sharing config setup (70/30 split)
+✓ Fee sharing config setup with partner key (70/25/5 split)
 ✓ Token launched on Solana mainnet
 ✓ Token mint address returned
 ✓ Token URL on Bags.fm provided
@@ -76,25 +76,26 @@ ERROR HANDLING:
 - If metadata upload fails: Check image URL validity
 
 CRITICAL: DO NOT LAUNCH WITHOUT PAYMENT CONFIRMATION
-Inform user: "Your token is ready to launch! Please confirm you sent 0.055 SOL to asC9NcTpRAJQ56WppDTHyBtEm5qHyh7tyyBiafiaYvN"
+Inform user: "Your token is ready to launch! Please confirm you sent 0.055 SOL to Dgk9bcm6H6LVaamyXQWeNCXh2HuTFoE4E7Hu7Pw1aiPx"
 
 ACTIVATION:
 "Launch token [NAME] with symbol [SYMBOL]" or "Create new token"`,
 
     usage:
-      "Launch tokens in seconds with 0.055 SOL flat fee. Automatic fee sharing (70/30), Solscan verification, and Bags.fm integration.",
+      "Launch tokens in seconds with 0.055 SOL flat fee. Automatic fee sharing (70/25/5 with partner), Solscan verification, and Bags.fm integration.",
     documentation: `# Token Launcher - Complete Guide
 
 ## Payment Flow
 **Fee**: 0.055 SOL (flat, one-time)
-**Receiver**: asC9NcTpRAJQ56WppDTHyBtEm5qHyh7tyyBiafiaYvN
+**Receiver**: Dgk9bcm6H6LVaamyXQWeNCXh2HuTFoE4E7Hu7Pw1aiPx
 
 User must send 0.055 SOL to the platform wallet BEFORE launch.
 
 ## Fee Distribution
 - Creator receives: 70% of all earned fees
-- Platform receives: 30% of all earned fees
-(This is set automatically in fee sharing config)
+- Platform (partner) receives: 25% of all earned fees (automatic via partner key asC9NcTpRAJQ56WppDTHyBtEm5qHyh7tyyBiafiaYvN)
+- Other allocations: 5% (customizable)
+(This is set automatically in fee sharing config with partner key)
 
 ## API Configuration
 - Base URL: https://public-api-v2.bags.fm/api/v1
@@ -122,7 +123,8 @@ import { Connection, Keypair, PublicKey } from "@solana/web3.js";
 import bs58 from "bs58";
 
 const BAGS_API_KEY = "bags_prod_YhTVMoennloNU06kSEDqQ8g_Bdd7_5g7RdcMT1EBr4o";
-const PLATFORM_FEE_WALLET = "asC9NcTpRAJQ56WppDTHyBtEm5qHyh7tyyBiafiaYvN";
+const PLATFORM_FEE_WALLET = "Dgk9bcm6H6LVaamyXQWeNCXh2HuTFoE4E7Hu7Pw1aiPx"; // Receives 0.055 SOL upfront
+const PARTNER_KEY = "asC9NcTpRAJQ56WppDTHyBtEm5qHyh7tyyBiafiaYvN"; // Earns 25% of fees from volume
 const LAUNCH_FEE_LAMPORTS = 55_000_000; // 0.055 SOL
 
 export class TokenLauncher {
@@ -168,12 +170,13 @@ export class TokenLauncher {
     });
     console.log("✅ Token mint created:", tokenInfo.tokenMint);
 
-    // Step 3: Create fee sharing config (70% creator, 30% platform)
-    console.log("⚙️ Setting up fee sharing (70% creator, 30% platform)...");
+    // Step 3: Create fee sharing config (70% creator, 25% platform partner, 5% other)
+    console.log("⚙️ Setting up fee sharing with partner key (70% creator, 25% platform partner, 5% other)...");
     const tokenMint = new PublicKey(tokenInfo.tokenMint);
     const feeClaimers = [
       { user: this.keypair.publicKey, userBps: 7000 }, // 70% to creator
-      { user: new PublicKey(PLATFORM_FEE_WALLET), userBps: 3000 }, // 30% to platform
+      { user: new PublicKey(PARTNER_KEY), userBps: 2500 }, // 25% to platform partner
+      // Remaining 5% can be configured for other allocations
     ];
 
     const configResult = await this.sdk.config.createBagsFeeShareConfig({
@@ -309,8 +312,9 @@ ACTIVATION:
 3. **Custom Vaults**: If token used custom fee splitting
 
 ## Fee Structure
-- Your Share: 70% (if creator) or custom %
-- Platform Share: 30% (if creator) or custom %
+- Your Share: 70% of earned fees
+- Platform (Partner) Share: 25% of earned fees (automatic via partner key)
+- Other Allocations: 5% (customizable)
 - Gas Cost: ~0.0005 SOL per claim
 
 ## API Integration
