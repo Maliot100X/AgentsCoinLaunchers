@@ -724,6 +724,127 @@ app.get('/api/stats', async (req, res) => {
   }
 });
 
+/**
+ * GET /api/leaderboard - Get top agents by earnings and token launches
+ */
+app.get('/api/leaderboard', async (req, res) => {
+  try {
+    const limit = parseInt(req.query.limit) || 10;
+    const sort = req.query.sort || 'earnings'; // earnings, launches, recent
+
+    let sortQuery = { totalEarnings: -1 };
+    if (sort === 'launches') {
+      sortQuery = { tokensLaunched: -1 };
+    } else if (sort === 'recent') {
+      sortQuery = { createdAt: -1 };
+    }
+
+    const agents = await User.find()
+      .select('telegramUsername telegramId feeReceiverWallet totalEarnings tokensLaunched createdAt')
+      .sort(sortQuery)
+      .limit(limit)
+      .lean();
+
+    // Transform data for frontend
+    const leaderboard = agents.map((agent, index) => ({
+      rank: index + 1,
+      id: agent._id.toString(),
+      username: agent.telegramUsername || `User_${agent.telegramId}`,
+      telegramId: agent.telegramId,
+      wallet: agent.feeReceiverWallet,
+      earnings: agent.totalEarnings || 0,
+      launches: agent.tokensLaunched || 0,
+      joinedDate: agent.createdAt
+    }));
+
+    res.json({
+      leaderboard,
+      total: await User.countDocuments(),
+      limit,
+      sort
+    });
+  } catch (error) {
+    console.error('❌ Get leaderboard error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+/**
+ * GET /api/agents/:agentId - Get detailed agent profile
+ */
+app.get('/api/agents/:agentId', async (req, res) => {
+  try {
+    const { agentId } = req.params;
+
+    // Check if it's a valid MongoDB ObjectId
+    const isValidObjectId = agentId.match(/^[0-9a-fA-F]{24}$/);
+    
+    let agent;
+    if (isValidObjectId) {
+      agent = await User.findById(agentId);
+    } else {
+      // Try to find by telegramId
+      agent = await User.findOne({ telegramId: parseInt(agentId) || agentId });
+    }
+
+    if (!agent) {
+      return res.status(404).json({ error: 'Agent not found' });
+    }
+
+    // Get agent's tokens
+    const tokens = await Token.find({ launchedBy: agent._id })
+      .select('name symbol mint launchedAt totalSupply currentPrice volume holders')
+      .sort({ launchedAt: -1 })
+      .limit(20)
+      .lean();
+
+    // Get agent's recent transactions
+    const transactions = await Transaction.find({ 
+      $or: [
+        { fromWallet: agent.feeReceiverWallet },
+        { toWallet: agent.feeReceiverWallet }
+      ]
+    })
+      .sort({ createdAt: -1 })
+      .limit(10)
+      .lean();
+
+    const profile = {
+      id: agent._id.toString(),
+      username: agent.telegramUsername || `User_${agent.telegramId}`,
+      telegramId: agent.telegramId,
+      wallet: agent.feeReceiverWallet,
+      joinedDate: agent.createdAt,
+      totalEarnings: agent.totalEarnings || 0,
+      tokensLaunched: agent.tokensLaunched || 0,
+      tokens: tokens.map(token => ({
+        id: token._id.toString(),
+        name: token.name,
+        symbol: token.symbol,
+        mint: token.mint,
+        launchedAt: token.launchedAt,
+        supply: token.totalSupply,
+        price: token.currentPrice || 0,
+        volume: token.volume || 0,
+        holders: token.holders || 0
+      })),
+      recentTransactions: transactions.map(tx => ({
+        id: tx._id.toString(),
+        type: tx.type,
+        amount: tx.amount,
+        fromWallet: tx.fromWallet,
+        toWallet: tx.toWallet,
+        timestamp: tx.createdAt
+      }))
+    };
+
+    res.json(profile);
+  } catch (error) {
+    console.error('❌ Get agent profile error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // ============================================================================
 // BAGS TRACKER ROUTES
 // ============================================================================

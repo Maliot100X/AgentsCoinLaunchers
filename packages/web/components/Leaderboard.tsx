@@ -1,14 +1,15 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 
 interface LeaderboardEntry {
   rank: number;
+  id: string;
   username: string;
-  tokensLaunched: number;
-  feesEarned: number;
-  trending: string;
-  avatar: string;
+  launches: number;
+  earnings: number;
+  wallet: string;
 }
 
 export default function Leaderboard() {
@@ -23,26 +24,29 @@ export default function Leaderboard() {
   const fetchLeaderboard = async () => {
     setLoading(true);
     try {
-      // Mock data - in production, fetch from API
-      const mockData: LeaderboardEntry[] = [
-        { rank: 1, username: 'TokenMaster', tokensLaunched: 156, feesEarned: 5.99, trending: '🔥🔥🔥', avatar: '👑' },
-        { rank: 2, username: 'SolanaPro', tokensLaunched: 143, feesEarned: 5.48, trending: '🔥🔥', avatar: '🚀' },
-        { rank: 3, username: 'CryptoBoss', tokensLaunched: 128, feesEarned: 4.91, trending: '🔥', avatar: '💎' },
-        { rank: 4, username: 'CosmicLaunch', tokensLaunched: 94, feesEarned: 3.61, trending: '⭐', avatar: '🌟' },
-        { rank: 5, username: 'AgentLauncher', tokensLaunched: 87, feesEarned: 3.34, trending: '⭐', avatar: '🤖' },
-        { rank: 6, username: 'TokenGod', tokensLaunched: 76, feesEarned: 2.92, trending: '⭐', avatar: '⚡' },
-        { rank: 7, username: 'DeFiWizard', tokensLaunched: 65, feesEarned: 2.49, trending: '📈', avatar: '🧙' },
-        { rank: 8, username: 'MoonShot', tokensLaunched: 54, feesEarned: 2.07, trending: '📈', avatar: '🌙' },
-        { rank: 9, username: 'LaunchPro', tokensLaunched: 43, feesEarned: 1.65, trending: '📈', avatar: '🎯' },
-        { rank: 10, username: 'Trader99', tokensLaunched: 32, feesEarned: 1.23, trending: '📊', avatar: '📊' }
-      ];
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+      const response = await fetch(`${apiUrl}/api/leaderboard?limit=10&sort=earnings`);
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch leaderboard');
+      }
 
-      setLeaderboard(mockData);
+      const data = await response.json();
+      setLeaderboard(data.leaderboard || []);
     } catch (error) {
       console.error('Error fetching leaderboard:', error);
+      // Fallback to empty state instead of mock data
+      setLeaderboard([]);
     } finally {
       setLoading(false);
     }
+  };
+
+  const formatSOL = (amount: number) => {
+    if (amount === 0) return '0';
+    if (amount >= 1e9) return `${(amount / 1e9).toFixed(2)}`;
+    if (amount >= 1e6) return `${(amount / 1e6).toFixed(2)}M`;
+    return `${(amount / 1e3).toFixed(2)}K`;
   };
 
   return (
@@ -53,70 +57,80 @@ export default function Leaderboard() {
         <p className="text-slate-300">Leaderboard of the most successful token launchers</p>
       </div>
 
-      {/* Period Selector */}
-      <div className="flex gap-4 justify-center">
-        {(['week', 'month', 'all'] as const).map((p) => (
-          <button
-            key={p}
-            onClick={() => setPeriod(p)}
-            className={`px-6 py-2 rounded-lg font-medium transition-all ${
-              period === p
-                ? 'bg-purple-600 text-white'
-                : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
-            }`}
-          >
-            {p === 'week' ? 'This Week' : p === 'month' ? 'This Month' : 'All Time'}
-          </button>
-        ))}
+      {/* View Full Leaderboard Button */}
+      <div className="flex justify-center">
+        <Link
+          href="/leaderboard"
+          className="px-6 py-3 bg-blue-600 hover:bg-blue-700 rounded-lg font-bold transition"
+        >
+          View Full Leaderboard →
+        </Link>
       </div>
 
       {/* Leaderboard Table */}
-      <div className="bg-slate-800/50 border border-slate-700 rounded-lg overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-slate-900/50 border-b border-slate-700">
-              <tr>
-                <th className="px-6 py-4 text-left text-sm font-bold text-slate-300">Rank</th>
-                <th className="px-6 py-4 text-left text-sm font-bold text-slate-300">Username</th>
-                <th className="px-6 py-4 text-right text-sm font-bold text-slate-300">Tokens Launched</th>
-                <th className="px-6 py-4 text-right text-sm font-bold text-slate-300">Fees Earned (SOL)</th>
-                <th className="px-6 py-4 text-center text-sm font-bold text-slate-300">Trending</th>
-              </tr>
-            </thead>
-            <tbody>
-              {leaderboard.map((entry) => (
-                <tr
-                  key={entry.rank}
-                  className={`border-b border-slate-700 hover:bg-slate-700/30 transition-colors ${
-                    entry.rank <= 3 ? 'bg-slate-700/20' : ''
-                  }`}
-                >
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-3">
-                      <span className="text-2xl">{entry.avatar}</span>
-                      <span className="font-bold text-lg">
-                        {entry.rank === 1 ? '🥇' : entry.rank === 2 ? '🥈' : entry.rank === 3 ? '🥉' : `#${entry.rank}`}
-                      </span>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className="font-bold">{entry.username}</span>
-                  </td>
-                  <td className="px-6 py-4 text-right">
-                    <span className="font-bold text-purple-400">{entry.tokensLaunched}</span>
-                  </td>
-                  <td className="px-6 py-4 text-right">
-                    <span className="font-bold text-pink-400">{entry.feesEarned}</span>
-                  </td>
-                  <td className="px-6 py-4 text-center">
-                    <span className="text-lg">{entry.trending}</span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      {loading ? (
+        <div className="flex justify-center items-center py-12">
+          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500"></div>
+          <span className="ml-3 text-slate-400">Loading leaderboard...</span>
         </div>
-      </div>
+      ) : (
+        <div className="bg-slate-800/50 border border-slate-700 rounded-lg overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-slate-900/50 border-b border-slate-700">
+                <tr>
+                  <th className="px-6 py-4 text-left text-sm font-bold text-slate-300">Rank</th>
+                  <th className="px-6 py-4 text-left text-sm font-bold text-slate-300">Username</th>
+                  <th className="px-6 py-4 text-right text-sm font-bold text-slate-300">Tokens Launched</th>
+                  <th className="px-6 py-4 text-right text-sm font-bold text-slate-300">Fees Earned (SOL)</th>
+                  <th className="px-6 py-4 text-center text-sm font-bold text-slate-300">Profile</th>
+                </tr>
+              </thead>
+              <tbody>
+                {leaderboard.length > 0 ? (
+                  leaderboard.map((entry) => (
+                    <tr
+                      key={entry.id}
+                      className={`border-b border-slate-700 hover:bg-slate-700/30 transition-colors ${
+                        entry.rank <= 3 ? 'bg-slate-700/20' : ''
+                      }`}
+                    >
+                      <td className="px-6 py-4">
+                        <span className="font-bold text-lg">
+                          {entry.rank === 1 ? '🥇' : entry.rank === 2 ? '🥈' : entry.rank === 3 ? '🥉' : `#${entry.rank}`}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className="font-bold">{entry.username}</span>
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        <span className="font-bold text-purple-400">{entry.launches}</span>
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        <span className="font-bold text-pink-400">{formatSOL(entry.earnings)}</span>
+                      </td>
+                      <td className="px-6 py-4 text-center">
+                        <Link
+                          href={`/agent/${entry.id}`}
+                          className="inline-block px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded text-sm font-bold transition"
+                        >
+                          View →
+                        </Link>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={5} className="px-6 py-8 text-center text-slate-400">
+                      <p>No agents on leaderboard yet. Be the first to launch a token!</p>
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
 
       {/* Info Cards */}
       <div className="grid md:grid-cols-3 gap-6">
@@ -131,22 +145,22 @@ export default function Leaderboard() {
         </div>
 
         <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-6">
-          <h3 className="text-lg font-bold mb-3">🎁 Top Rewards</h3>
+          <h3 className="text-lg font-bold mb-3">💰 Earnings</h3>
           <ul className="space-y-2 text-slate-400 text-sm">
-            <li>🥇 #1: Featured & 2x boost</li>
-            <li>🥈 #2: 1.5x boost</li>
-            <li>🥉 #3: 1.2x boost</li>
-            <li>⭐ Top 10: Special badge</li>
+            <li>🎯 70% of every token launch fee</li>
+            <li>📈 Real-time earnings tracking</li>
+            <li>💳 Claim your fees anytime</li>
+            <li>🔐 Direct to your wallet</li>
           </ul>
         </div>
 
         <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-6">
           <h3 className="text-lg font-bold mb-3">📊 Updates</h3>
           <ul className="space-y-2 text-slate-400 text-sm">
-            <li>📅 Weekly leaderboard refresh</li>
-            <li>⏰ Real-time score updates</li>
+            <li>📅 Real-time leaderboard updates</li>
+            <li>⏰ Live earnings tracking</li>
             <li>🔔 Weekly ranking emails</li>
-            <li>🎯 Monthly contests & prizes</li>
+            <li>🎯 See who's winning</li>
           </ul>
         </div>
       </div>
