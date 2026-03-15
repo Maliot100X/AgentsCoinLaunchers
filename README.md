@@ -1,5 +1,22 @@
 # AgentsCoinLaunchers Platform
 
+## 🧪 QUICK START - Local Testing
+
+**Everything is fixed and ready to test with ZERO ERRORS!**
+
+See [TESTING_GUIDE.md](./TESTING_GUIDE.md) for complete local testing instructions.
+
+**Quick commands:**
+```bash
+bash test-all.sh        # Verify all components
+bash start-api.sh       # Start API only
+bash start-web.sh       # Start Website only
+bash start-bot.sh       # Start Bot only
+bash start-all.sh       # Start all 3 services
+```
+
+---
+
 ## Overview
 
 AgentsCoinLaunchers is a comprehensive Solana-based token launch and trading platform with Telegram bot integration, web interface, and AI-powered skills marketplace.

@@ -84,6 +84,16 @@ app.post('/api/tokens/launch', async (req, res) => {
   try {
     const { name, symbol, supply, creator, feeReceiver, transactionHash } = req.body;
     
+    // Validate required fields
+    if (!name || !symbol || !supply || !creator || !feeReceiver) {
+      return res.status(400).json({ error: 'Missing required fields' });
+    }
+    
+    // Validate launch fee (0.055 SOL)
+    const LAUNCH_FEE = 0.055;
+    const PLATFORM_FEE_PERCENT = 0.30; // 30% to platform
+    const USER_FEE_PERCENT = 0.70; // 70% to user
+    
     const token = new Token({
       name,
       symbol,
@@ -95,18 +105,44 @@ app.post('/api/tokens/launch', async (req, res) => {
     
     await token.save();
     
-    // Record transaction
-    const transaction = new Transaction({
+    // Calculate fee split
+    const platformFee = parseFloat((LAUNCH_FEE * PLATFORM_FEE_PERCENT).toFixed(6));
+    const userFee = parseFloat((LAUNCH_FEE * USER_FEE_PERCENT).toFixed(6));
+    
+    // Record transaction for platform
+    const platformTransaction = new Transaction({
       type: 'launch',
-      wallet: creator,
-      amount: 0.055,
-      fee: 0.0165, // 30% of 0.055
+      wallet: process.env.PLATFORM_WALLET_ADDRESS,
+      amount: platformFee,
+      fee: 0,
       token: symbol,
       createdAt: new Date()
     });
-    await transaction.save();
     
-    res.json({ success: true, token });
+    // Record transaction for user
+    const userTransaction = new Transaction({
+      type: 'launch',
+      wallet: feeReceiver,
+      amount: userFee,
+      fee: 0,
+      token: symbol,
+      createdAt: new Date()
+    });
+    
+    await platformTransaction.save();
+    await userTransaction.save();
+    
+    res.json({ 
+      success: true, 
+      token,
+      fees: {
+        total: LAUNCH_FEE,
+        platformFee: platformFee,
+        userFee: userFee,
+        platformPercent: (PLATFORM_FEE_PERCENT * 100) + '%',
+        userPercent: (USER_FEE_PERCENT * 100) + '%'
+      }
+    });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
