@@ -238,10 +238,10 @@ export default function Home() {
             <div>
               <h3 className="font-bold mb-4">Product</h3>
               <ul className="space-y-2 text-slate-400 text-sm">
-                <li><a href="#" className="hover:text-white transition">Launch Token</a></li>
-                <li><a href="#" className="hover:text-white transition">Swap</a></li>
-                <li><a href="#" className="hover:text-white transition">Skills</a></li>
-                <li><a href="#" className="hover:text-white transition">API</a></li>
+                <li><a href="/#launch" className="hover:text-white transition">Launch Token</a></li>
+                <li><a href="/#swap" className="hover:text-white transition">Swap</a></li>
+                <li><a href="/skills" className="hover:text-white transition">Skills</a></li>
+                <li><a href="/docs" className="hover:text-white transition">API</a></li>
               </ul>
             </div>
             <div>
@@ -249,25 +249,25 @@ export default function Home() {
               <ul className="space-y-2 text-slate-400 text-sm">
                 <li><a href="https://t.me/TheSistersAgentLauncherSignals" target="_blank" className="hover:text-white transition">Telegram Channel</a></li>
                 <li><a href="https://t.me/TheSistersAgentLauncherBot" target="_blank" className="hover:text-white transition">Telegram Bot</a></li>
-                <li><a href="#" className="hover:text-white transition">Twitter</a></li>
+                <li><a href="https://x.com/KaiNovasWarm" target="_blank" className="hover:text-white transition">Twitter</a></li>
                 <li><a href="#" className="hover:text-white transition">Discord</a></li>
               </ul>
             </div>
             <div>
               <h3 className="font-bold mb-4">Docs</h3>
               <ul className="space-y-2 text-slate-400 text-sm">
-                <li><a href="#" className="hover:text-white transition">API Docs</a></li>
-                <li><a href="#" className="hover:text-white transition">Skills</a></li>
-                <li><a href="#" className="hover:text-white transition">FAQ</a></li>
-                <li><a href="#" className="hover:text-white transition">Guide</a></li>
+                <li><a href="/docs" className="hover:text-white transition">API Docs</a></li>
+                <li><a href="/skills" className="hover:text-white transition">Skills</a></li>
+                <li><a href="/docs#faq" className="hover:text-white transition">FAQ</a></li>
+                <li><a href="/docs#guide" className="hover:text-white transition">Guide</a></li>
               </ul>
             </div>
             <div>
               <h3 className="font-bold mb-4">Legal</h3>
               <ul className="space-y-2 text-slate-400 text-sm">
-                <li><a href="#" className="hover:text-white transition">Privacy</a></li>
-                <li><a href="#" className="hover:text-white transition">Terms</a></li>
-                <li><a href="#" className="hover:text-white transition">Security</a></li>
+                <li><a href="/legal/privacy" className="hover:text-white transition">Privacy</a></li>
+                <li><a href="/legal/terms" className="hover:text-white transition">Terms</a></li>
+                <li><a href="/legal/security" className="hover:text-white transition">Security</a></li>
               </ul>
             </div>
           </div>
