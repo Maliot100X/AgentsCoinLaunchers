@@ -4,12 +4,12 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 
 interface LeaderboardEntry {
-  rank: number;
-  id: string;
-  username: string;
-  launches: number;
-  earnings: number;
+  _id?: string;
+  rank?: number;
   wallet: string;
+  name: string;
+  launchCount: number;
+  totalEarnings: number;
 }
 
 export default function Leaderboard() {
@@ -87,30 +87,30 @@ export default function Leaderboard() {
               </thead>
               <tbody>
                 {leaderboard.length > 0 ? (
-                  leaderboard.map((entry) => (
+                  leaderboard.map((entry, index) => (
                     <tr
-                      key={entry.id}
+                      key={entry._id || entry.wallet}
                       className={`border-b border-slate-700 hover:bg-slate-700/30 transition-colors ${
-                        entry.rank <= 3 ? 'bg-slate-700/20' : ''
+                        index <= 2 ? 'bg-slate-700/20' : ''
                       }`}
                     >
                       <td className="px-6 py-4">
                         <span className="font-bold text-lg">
-                          {entry.rank === 1 ? '🥇' : entry.rank === 2 ? '🥈' : entry.rank === 3 ? '🥉' : `#${entry.rank}`}
+                          {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `#${index + 1}`}
                         </span>
                       </td>
                       <td className="px-6 py-4">
-                        <span className="font-bold">{entry.username}</span>
+                        <span className="font-bold">{entry.name}</span>
                       </td>
                       <td className="px-6 py-4 text-right">
-                        <span className="font-bold text-purple-400">{entry.launches}</span>
+                        <span className="font-bold text-purple-400">{entry.launchCount}</span>
                       </td>
                       <td className="px-6 py-4 text-right">
-                        <span className="font-bold text-pink-400">{formatSOL(entry.earnings)}</span>
+                        <span className="font-bold text-pink-400">{formatSOL(entry.totalEarnings)}</span>
                       </td>
                       <td className="px-6 py-4 text-center">
                         <Link
-                          href={`/agent/${entry.id}`}
+                          href={`/agent/${entry.wallet}`}
                           className="inline-block px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded text-sm font-bold transition"
                         >
                           View →

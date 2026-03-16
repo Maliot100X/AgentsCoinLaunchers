@@ -44,15 +44,33 @@ export default function AgentProfilePage() {
     const fetchAgent = async () => {
       try {
         setLoading(true);
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-        const response = await fetch(`${apiUrl}/api/agents/${agentId}`);
+        // Use leaderboard API to get agent data
+        const response = await fetch(`/api/leaderboard?limit=1000`);
         
         if (!response.ok) {
           throw new Error('Failed to load agent profile');
         }
         
         const data = await response.json();
-        setAgent(data);
+        // Find agent by wallet ID
+        const foundAgent = data.leaderboard.find((agent: any) => agent.wallet === agentId);
+        
+        if (!foundAgent) {
+          throw new Error('Agent not found');
+        }
+        
+        // Map API data to Agent interface
+        setAgent({
+          id: foundAgent.wallet,
+          username: foundAgent.name,
+          telegramId: 0,
+          wallet: foundAgent.wallet,
+          joinedDate: foundAgent.lastLaunchDate || new Date().toISOString(),
+          totalEarnings: foundAgent.totalEarnings || 0,
+          tokensLaunched: foundAgent.launchCount || 0,
+          tokens: foundAgent.tokens || [],
+          recentTransactions: []
+        });
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Unknown error');
         console.error('Error fetching agent:', err);
@@ -61,7 +79,7 @@ export default function AgentProfilePage() {
       }
     };
 
-    if (agentId) {
+    if (agentId && agentId !== 'undefined') {
       fetchAgent();
     }
   }, [agentId]);
