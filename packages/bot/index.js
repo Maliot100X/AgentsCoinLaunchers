@@ -1,5 +1,6 @@
 const TelegramBot = require('node-telegram-bot-api');
 const axios = require('axios');
+const { MongoClient } = require('mongodb');
 require('dotenv').config();
 
 const TOKEN = process.env.TELEGRAM_BOT_TOKEN;
@@ -7,6 +8,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 const TELEGRAM_CHANNEL_ID = process.env.TELEGRAM_CHANNEL_ID || '-1003635356299';
 const PLATFORM_WALLET = process.env.PLATFORM_WALLET_ADDRESS || 'Dgk9bcm6H6LVaamyXQWeNCXh2HuTFoE4E7Hu7Pw1aiPx';
 const BAGS_API_KEY = process.env.BAGS_API_KEY;
+const MONGODB_URI = process.env.MONGODB_URI;
 
 if (!TOKEN) {
   console.error('❌ TELEGRAM_BOT_TOKEN is required');
@@ -179,20 +181,120 @@ const launchToken = async (name, symbol, supply, creator, feeReceiver, transacti
     return response.data;
   } catch (error) {
     console.error('❌ Token launch error:', error.message);
-    throw error;
-  }
-};
+     throw error;
+   }
+ };
 
-/**
- * Broadcast message to Telegram channel
- */
-const broadcastToChannel = async (message) => {
-  try {
-    await bot.sendMessage(TELEGRAM_CHANNEL_ID, message, { parse_mode: 'Markdown' });
-  } catch (error) {
-    console.error('❌ Channel broadcast error:', error.message);
-  }
-};
+ /**
+  * Write token launch to MongoDB
+  */
+ const writeTokenToMongoDB = async (tokenName, tokenSymbol, creator, feeEarned, transactionHash) => {
+   if (!MONGODB_URI) {
+     console.warn('⚠️ MongoDB URI not configured, skipping database write');
+     return;
+   }
+
+   const client = new MongoClient(MONGODB_URI);
+
+   try {
+     await client.connect();
+     const db = client.db('agentscoinlaunchers');
+
+     // Update user stats
+     const userWallet = `tg_${creator}`;
+     await db.collection('users').updateOne(
+       { name: userWallet },
+       {
+         $inc: {
+           tokensCreated: 1,
+           feesEarned: feeEarned * 0.7, // 70% of fees
+           totalVolume: 0
+         },
+         $set: {
+           updatedAt: new Date().toISOString()
+         }
+       },
+       { upsert: true }
+     );
+
+     // Add token to tokens collection
+     const tokenMint = `${tokenSymbol}_${Date.now()}`;
+     await db.collection('tokens').insertOne({
+       name: tokenName,
+       symbol: tokenSymbol,
+       tokenMint: tokenMint,
+       creatorWallet: userWallet,
+       creatorName: userWallet,
+       volume: 0,
+       fees: feeEarned,
+       userShare: feeEarned * 0.7,
+       launchDate: new Date().toISOString(),
+       status: 'ACTIVE',
+       holders: [],
+       transactions: 0
+     });
+
+     // Add transaction record
+     await db.collection('transactions').insertOne({
+       tokenMint: tokenMint,
+       type: 'LAUNCH',
+       creator: userWallet,
+       amount: 1000000000, // Default supply
+       fees: feeEarned,
+       timestamp: new Date().toISOString(),
+       transactionHash: transactionHash
+     });
+
+     // Update or create leaderboard entry
+     const leaderboardEntry = await db.collection('leaderboard').findOne({ wallet: userWallet });
+     if (leaderboardEntry) {
+       await db.collection('leaderboard').updateOne(
+         { wallet: userWallet },
+         {
+           $inc: {
+             launchCount: 1,
+             totalFees: feeEarned,
+             totalEarnings: feeEarned * 0.7
+           },
+           $set: {
+             lastLaunchDate: new Date().toISOString(),
+             updatedAt: new Date().toISOString()
+           }
+         }
+       );
+     } else {
+       await db.collection('leaderboard').insertOne({
+         wallet: userWallet,
+         name: userWallet,
+         rank: 1,
+         launchCount: 1,
+         totalVolume: 0,
+         totalFees: feeEarned,
+         totalEarnings: feeEarned * 0.7,
+         lastLaunchDate: new Date().toISOString(),
+         createdAt: new Date().toISOString(),
+         updatedAt: new Date().toISOString()
+       });
+     }
+
+     console.log('✅ Token launch recorded in MongoDB');
+   } catch (error) {
+     console.error('❌ MongoDB write error:', error.message);
+   } finally {
+     await client.close();
+   }
+ };
+
+ /**
+  * Broadcast message to Telegram channel
+  */
+ const broadcastToChannel = async (message) => {
+   try {
+     await bot.sendMessage(TELEGRAM_CHANNEL_ID, message, { parse_mode: 'Markdown' });
+   } catch (error) {
+     console.error('❌ Channel broadcast error:', error.message);
+   }
+ };
 
 // ============================================================================
 // BOT COMMANDS
@@ -1226,16 +1328,25 @@ Send /launch to begin!
       try {
         session.setState('idle');
 
-        bot.sendMessage(chatId, '⏳ Deploying token on Bags...');
+         bot.sendMessage(chatId, '⏳ Deploying token on Bags...');
 
-        const launchResult = await launchToken(
-          session.launchData.tokenName,
-          session.launchData.tokenTicker,
-          1000000000, // Default supply
-          `tg_${userId}`,
-          session.feeReceiverWallet || `tg_${userId}`,
-          session.launchData.transactionHash
-        );
+         const launchResult = await launchToken(
+           session.launchData.tokenName,
+           session.launchData.tokenTicker,
+           1000000000, // Default supply
+           `tg_${userId}`,
+           session.feeReceiverWallet || `tg_${userId}`,
+           session.launchData.transactionHash
+         );
+
+         // Write to MongoDB
+         await writeTokenToMongoDB(
+           session.launchData.tokenName,
+           session.launchData.tokenTicker,
+           userId,
+           0.055, // Launch fee in SOL
+           session.launchData.transactionHash
+         );
 
         const successText = `
 🎉 *Token Successfully Launched!*

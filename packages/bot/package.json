@@ -12,6 +12,7 @@
     "dotenv": "^16.6.1",
     "es-abstract": "^1.24.1",
     "express": "^4.22.1",
-    "node-telegram-bot-api": "^0.64.0"
+    "node-telegram-bot-api": "^0.64.0",
+    "mongodb": "^6.3.0"
   }
 }

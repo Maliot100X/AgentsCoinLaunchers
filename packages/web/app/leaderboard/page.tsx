@@ -61,6 +61,11 @@ export default function LeaderboardPage() {
     };
 
     fetchLeaderboard();
+
+    // Auto-refresh every 10 seconds
+    const interval = setInterval(fetchLeaderboard, 10000);
+
+    return () => clearInterval(interval);
   }, [sortBy]);
 
   const formatSOL = (amount: number) => {
