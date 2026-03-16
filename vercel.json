@@ -1,0 +1,12 @@
+{
+  "buildCommand": "cd packages/web && npm run build",
+  "outputDirectory": "packages/web/.next",
+  "installCommand": "npm install",
+  "env": {
+    "NEXT_PUBLIC_API_URL": "@next_public_api_url",
+    "NEXT_PUBLIC_SOLANA_RPC_URL": "@next_public_solana_rpc_url",
+    "NEXT_PUBLIC_PLATFORM_WALLET": "@next_public_platform_wallet",
+    "NEXT_PUBLIC_PLATFORM_NAME": "AgentsCoinLaunchers",
+    "NODE_ENV": "production"
+  }
+}
