@@ -1,9 +1,5 @@
 {
-  "buildCommand": "npm run build --workspace=web",
+  "buildCommand": "cd packages/web && npm install && npm run build",
   "outputDirectory": "packages/web/.next",
-  "installCommand": "npm install",
-  "rewrites": [
-    { "source": "/api/(.*)", "destination": "http://localhost:3001/api/$1" },
-    { "source": "/(.*)", "destination": "/index.html" }
-  ]
+  "installCommand": "npm install"
 }
