@@ -1,5 +1,4 @@
 {
-  "buildCommand": "bash build.sh",
-  "outputDirectory": "packages/web/.next",
-  "installCommand": "npm install"
+  "buildCommand": "npm install --legacy-peer-deps && (cd packages/web && npm install --legacy-peer-deps && npm run build)",
+  "outputDirectory": "packages/web/.next"
 }
