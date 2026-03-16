@@ -1,5 +1,5 @@
 {
-  "buildCommand": "cd packages/web && npm install && npm run build",
+  "buildCommand": "npm install --workspaces && npm run build --workspace=web",
   "outputDirectory": "packages/web/.next",
-  "installCommand": "npm install"
+  "installCommand": "npm install --workspaces --include-workspace-root"
 }
