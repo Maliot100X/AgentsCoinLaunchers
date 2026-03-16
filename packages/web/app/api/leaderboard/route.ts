@@ -25,12 +25,12 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '50', 10);
 
     // Fetch leaderboard from MongoDB
-    let leaderboard = await db.collection('leaderboard').find({}).toArray();
+    let leaderboard: any = await db.collection('leaderboard').find({}).toArray();
 
     // If leaderboard is empty, build it from users and tokens
     if (leaderboard.length === 0) {
-      const users = await db.collection('users').find({}).toArray();
-      leaderboard = users.map((user) => ({
+      const users: any = await db.collection('users').find({}).toArray();
+      leaderboard = users.map((user: any) => ({
         wallet: user.walletAddress || user.name,
         name: user.name,
         launchCount: user.tokensCreated || 0,
@@ -44,12 +44,12 @@ export async function GET(request: NextRequest) {
 
     // Sort based on parameter
     if (sort === 'launches') {
-      leaderboard.sort((a, b) => (b.launchCount || 0) - (a.launchCount || 0));
+      leaderboard.sort((a: any, b: any) => (b.launchCount || 0) - (a.launchCount || 0));
     } else if (sort === 'recent') {
-      leaderboard.sort((a, b) => new Date(b.lastLaunchDate).getTime() - new Date(a.lastLaunchDate).getTime());
+      leaderboard.sort((a: any, b: any) => new Date(b.lastLaunchDate).getTime() - new Date(a.lastLaunchDate).getTime());
     } else {
       // Default: sort by earnings
-      leaderboard.sort((a, b) => (b.totalEarnings || 0) - (a.totalEarnings || 0));
+      leaderboard.sort((a: any, b: any) => (b.totalEarnings || 0) - (a.totalEarnings || 0));
     }
 
     return NextResponse.json({

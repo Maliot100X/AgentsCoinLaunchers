@@ -24,8 +24,8 @@ export async function GET() {
     const tokenCount = await db.collection('tokens').countDocuments();
 
     // Get total volume from users collection
-    const usersData = await db.collection('users').find({}).toArray();
-    const totalVolume = usersData.reduce((sum, user) => sum + (user.totalVolume || 0), 0);
+    const usersData: any = await db.collection('users').find({}).toArray();
+    const totalVolume = usersData.reduce((sum: number, user: any) => sum + (user.totalVolume || 0), 0);
 
     // Get user count
     const userCount = await db.collection('users').countDocuments();
