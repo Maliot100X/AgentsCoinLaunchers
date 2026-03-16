@@ -42,8 +42,7 @@ export default function LeaderboardPage() {
     const fetchLeaderboard = async () => {
       try {
         setLoading(true);
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-        const response = await fetch(`${apiUrl}/api/leaderboard?sort=${sortBy}&limit=50`);
+        const response = await fetch(`/api/leaderboard?sort=${sortBy}&limit=50`);
         
         if (!response.ok) {
           throw new Error('Failed to load leaderboard');

@@ -24,8 +24,7 @@ export default function Leaderboard() {
   const fetchLeaderboard = async () => {
     setLoading(true);
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-      const response = await fetch(`${apiUrl}/api/leaderboard?limit=10&sort=earnings`);
+      const response = await fetch(`/api/leaderboard?limit=10&sort=earnings`);
       
       if (!response.ok) {
         throw new Error('Failed to fetch leaderboard');

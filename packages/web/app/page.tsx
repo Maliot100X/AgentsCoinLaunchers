@@ -26,7 +26,7 @@ export default function Home() {
 
   const fetchStats = async () => {
     try {
-      const response = await fetch(process.env.NEXT_PUBLIC_API_URL + '/api/stats');
+      const response = await fetch('/api/stats');
       const data = await response.json();
       setStats({
         totalLaunches: data.tokens || 0,
