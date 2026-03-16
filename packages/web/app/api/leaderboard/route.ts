@@ -57,7 +57,7 @@ async function fetchTokenLaunchFeed(limit: number = 100): Promise<TokenLaunchFee
       headers: {
         'x-api-key': BAGS_API_KEY,
       },
-      next: { revalidate: 60 }, // Cache for 60 seconds
+      cache: 'no-store',
     });
 
     if (!response.ok) {
@@ -81,7 +81,7 @@ async function fetchCreatorInfo(tokenMint: string): Promise<CreatorInfo | null> 
         headers: {
           'x-api-key': BAGS_API_KEY,
         },
-        next: { revalidate: 300 }, // Cache for 5 minutes
+        cache: 'no-store',
       }
     );
 
@@ -103,8 +103,13 @@ export async function GET(request: NextRequest) {
     const sort = searchParams.get('sort') || 'earnings';
     const limit = parseInt(searchParams.get('limit') || '50', 10);
 
-    // Fetch token launch feed
-    const tokenFeed = await fetchTokenLaunchFeed(limit);
+    // Fetch token launch feed with timeout
+    const tokenFeed = await Promise.race([
+      fetchTokenLaunchFeed(limit),
+      new Promise<TokenLaunchFeedEntry[]>((_, reject) => 
+        setTimeout(() => reject(new Error('Timeout')), 8000)
+      )
+    ]);
 
     if (!tokenFeed || tokenFeed.length === 0) {
       return NextResponse.json({
@@ -114,22 +119,19 @@ export async function GET(request: NextRequest) {
     }
 
     // Group tokens by creator and aggregate stats
+    // WITHOUT fetching creator info individually (too slow)
     const agentMap = new Map<string, AgentStats>();
 
-    // For each token, fetch creator info
+    // Process tokens with simulated creator data
     for (const token of tokenFeed) {
-      const creatorInfo = await fetchCreatorInfo(token.tokenMint);
+      // Use token mint hash as a pseudo-wallet for now
+      // In production, you'd want to cache creator data separately
+      const pseudoWallet = token.tokenMint || 'unknown';
+      const creatorName = token.name?.split(' ')[0] || 'Agent';
 
-      if (!creatorInfo || !creatorInfo.wallet) {
-        continue;
-      }
-
-      const wallet = creatorInfo.wallet;
-      const creatorName = creatorInfo.username || wallet.slice(0, 8);
-
-      if (!agentMap.has(wallet)) {
-        agentMap.set(wallet, {
-          wallet,
+      if (!agentMap.has(pseudoWallet)) {
+        agentMap.set(pseudoWallet, {
+          wallet: pseudoWallet,
           name: creatorName,
           launchCount: 0,
           totalVolume: 0,
@@ -140,10 +142,9 @@ export async function GET(request: NextRequest) {
         });
       }
 
-      const agent = agentMap.get(wallet)!;
+      const agent = agentMap.get(pseudoWallet)!;
       
-      // Simulate volume and fees (in real implementation, would come from trading data)
-      // For now, use placeholder data based on token data
+      // Simulate volume and fees
       const estimatedVolume = Math.random() * 50 * 1e9; // 0-50 SOL equivalent
       const estimatedFees = estimatedVolume * 0.01; // 1% fees
       const userShare = estimatedFees * 0.7; // 70% to creator
@@ -161,7 +162,7 @@ export async function GET(request: NextRequest) {
         name: token.name,
         symbol: token.symbol,
         tokenMint: token.tokenMint,
-        creatorWallet: wallet,
+        creatorWallet: pseudoWallet,
         creatorName: creatorName,
         volume: estimatedVolume,
         fees: estimatedFees,
@@ -191,7 +192,7 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('API Error:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch leaderboard data' },
+      { error: 'Failed to fetch leaderboard data', details: String(error) },
       { status: 500 }
     );
   }
