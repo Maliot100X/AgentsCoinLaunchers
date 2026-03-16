@@ -4,6 +4,33 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 
+interface TokenLaunch {
+  id?: string;
+  name: string;
+  symbol: string;
+  mint?: string;
+  tokenMint?: string;
+  launchedAt?: string;
+  launchDate?: string;
+  supply: number;
+  price?: number;
+  volume?: number;
+  holders?: number;
+  fees?: number;
+  status?: string;
+}
+
+interface Transaction {
+  id?: string;
+  type: string;
+  amount: number;
+  fromWallet?: string;
+  toWallet?: string;
+  timestamp?: string;
+  creator?: string;
+  tokenMint?: string;
+}
+
 interface Agent {
   id: string;
   username: string;
@@ -12,25 +39,8 @@ interface Agent {
   joinedDate: string;
   totalEarnings: number;
   tokensLaunched: number;
-  tokens: Array<{
-    id: string;
-    name: string;
-    symbol: string;
-    mint: string;
-    launchedAt: string;
-    supply: number;
-    price: number;
-    volume: number;
-    holders: number;
-  }>;
-  recentTransactions: Array<{
-    id: string;
-    type: string;
-    amount: number;
-    fromWallet: string;
-    toWallet: string;
-    timestamp: string;
-  }>;
+  tokens: TokenLaunch[];
+  recentTransactions: Transaction[];
 }
 
 export default function AgentProfilePage() {
@@ -60,6 +70,33 @@ export default function AgentProfilePage() {
         }
         
         // Map API data to Agent interface
+        const tokens = (foundAgent.tokens || []).map((token: any) => ({
+          id: token._id || token.tokenMint,
+          name: token.name,
+          symbol: token.symbol,
+          mint: token.tokenMint || token.mint,
+          tokenMint: token.tokenMint,
+          launchedAt: token.launchDate || new Date().toISOString(),
+          launchDate: token.launchDate,
+          supply: token.supply || 1000000000,
+          price: token.price || 0,
+          volume: token.volume || 0,
+          holders: token.holders || 0,
+          fees: token.fees,
+          status: token.status
+        }));
+
+        const transactions = (foundAgent.transactions || []).map((tx: any, idx: number) => ({
+          id: tx._id || `tx-${idx}`,
+          type: tx.type || 'TRANSFER',
+          amount: tx.amount || 0,
+          fromWallet: tx.creator || tx.from || 'Unknown',
+          toWallet: tx.toWallet || tx.to || 'Unknown',
+          timestamp: tx.timestamp,
+          creator: tx.creator,
+          tokenMint: tx.tokenMint
+        }));
+
         setAgent({
           id: foundAgent.wallet,
           username: foundAgent.name,
@@ -68,8 +105,8 @@ export default function AgentProfilePage() {
           joinedDate: foundAgent.lastLaunchDate || new Date().toISOString(),
           totalEarnings: foundAgent.totalEarnings || 0,
           tokensLaunched: foundAgent.launchCount || 0,
-          tokens: foundAgent.tokens || [],
-          recentTransactions: []
+          tokens: tokens,
+          recentTransactions: transactions
         });
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Unknown error');
@@ -181,16 +218,16 @@ export default function AgentProfilePage() {
                 <div key={token.id} className="bg-slate-800 p-4 rounded border border-slate-700 hover:border-blue-500 transition">
                   <div className="flex items-start justify-between">
                     <div>
-                      <h3 className="font-bold text-lg">{token.name}</h3>
-                      <p className="text-slate-400 text-sm">Symbol: {token.symbol}</p>
-                      <p className="text-slate-500 text-xs font-mono mt-1">
-                        Mint: {token.mint.slice(0, 10)}...{token.mint.slice(-6)}
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-sm text-slate-400">Launched</p>
-                      <p className="text-sm">{formatDate(token.launchedAt)}</p>
-                    </div>
+                       <h3 className="font-bold text-lg">{token.name}</h3>
+                       <p className="text-slate-400 text-sm">Symbol: {token.symbol}</p>
+                        <p className="text-slate-500 text-xs font-mono mt-1">
+                          Mint: {token.mint?.slice ? `${token.mint.slice(0, 10)}...${token.mint.slice(-6)}` : 'N/A'}
+                        </p>
+                     </div>
+                     <div className="text-right">
+                       <p className="text-sm text-slate-400">Launched</p>
+                       <p className="text-sm">{token.launchedAt ? formatDate(token.launchedAt) : 'N/A'}</p>
+                     </div>
                   </div>
 
                   <div className="grid grid-cols-4 gap-4 mt-4">
@@ -200,18 +237,18 @@ export default function AgentProfilePage() {
                         {(token.supply / 1e9).toFixed(2)}B
                       </p>
                     </div>
-                    <div>
-                      <p className="text-slate-400 text-xs">Price</p>
-                      <p className="text-sm font-bold">
-                        ${token.price.toFixed(6)}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-slate-400 text-xs">Volume</p>
-                      <p className="text-sm font-bold">
-                        {formatSOL(token.volume)} SOL
-                      </p>
-                    </div>
+                     <div>
+                       <p className="text-slate-400 text-xs">Price</p>
+                       <p className="text-sm font-bold">
+                         ${(token.price ?? 0).toFixed(6)}
+                       </p>
+                     </div>
+                     <div>
+                       <p className="text-slate-400 text-xs">Volume</p>
+                       <p className="text-sm font-bold">
+                         {formatSOL(token.volume ?? 0)} SOL
+                       </p>
+                     </div>
                     <div>
                       <p className="text-slate-400 text-xs">Holders</p>
                       <p className="text-sm font-bold">
@@ -260,15 +297,15 @@ export default function AgentProfilePage() {
                           </span>
                         </td>
                         <td className="p-4 font-bold">{formatSOL(tx.amount)} SOL</td>
-                        <td className="p-4 text-xs font-mono text-slate-400">
-                          {tx.fromWallet.slice(0, 6)}...
-                        </td>
-                        <td className="p-4 text-xs font-mono text-slate-400">
-                          {tx.toWallet.slice(0, 6)}...
-                        </td>
-                        <td className="p-4 text-slate-400">
-                          {formatDate(tx.timestamp)}
-                        </td>
+                         <td className="p-4 text-xs font-mono text-slate-400">
+                           {(tx.fromWallet ?? 'Unknown').slice(0, 6)}...
+                         </td>
+                         <td className="p-4 text-xs font-mono text-slate-400">
+                           {(tx.toWallet ?? 'Unknown').slice(0, 6)}...
+                         </td>
+                         <td className="p-4 text-slate-400">
+                           {tx.timestamp ? formatDate(tx.timestamp) : 'N/A'}
+                         </td>
                       </tr>
                     ))}
                   </tbody>

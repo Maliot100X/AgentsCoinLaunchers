@@ -48,16 +48,50 @@ export async function GET(request: NextRequest) {
     // If leaderboard is empty, build it from users and tokens
     if (leaderboard.length === 0) {
       const users: any = await db.collection('users').find({}).toArray();
-      leaderboard = users.map((user: any) => ({
-        wallet: user.walletAddress || user.name,
-        name: user.name,
-        launchCount: user.tokensCreated || 0,
-        totalVolume: user.totalVolume || 0,
-        totalFees: user.feesEarned || 0,
-        totalEarnings: (user.feesEarned || 0) * 0.7, // 70% share
-        lastLaunchDate: user.updatedAt || new Date().toISOString(),
-        tokens: [],
-      }));
+      const allTokens: any = await db.collection('tokens').find({}).toArray();
+      const allTransactions: any = await db.collection('transactions').find({}).toArray();
+
+      leaderboard = users.map((user: any) => {
+        // Get tokens launched by this user
+        const userTokens = allTokens.filter((token: any) => token.creatorWallet === (user.walletAddress || user.name));
+        
+        // Get transactions for this user's tokens
+        const userTransactions = allTransactions.filter((tx: any) => 
+          userTokens.some((token: any) => token.tokenMint === tx.tokenMint)
+        );
+
+        return {
+          wallet: user.walletAddress || user.name,
+          name: user.name,
+          launchCount: user.tokensCreated || 0,
+          totalVolume: user.totalVolume || 0,
+          totalFees: user.feesEarned || 0,
+          totalEarnings: (user.feesEarned || 0) * 0.7, // 70% share
+          lastLaunchDate: user.updatedAt || new Date().toISOString(),
+          tokens: userTokens,
+          transactions: userTransactions,
+        };
+      });
+    } else {
+      // If leaderboard exists, fetch and attach real tokens and transactions
+      const allTokens: any = await db.collection('tokens').find({}).toArray();
+      const allTransactions: any = await db.collection('transactions').find({}).toArray();
+
+      leaderboard = leaderboard.map((entry: any) => {
+        // Get tokens launched by this wallet
+        const userTokens = allTokens.filter((token: any) => token.creatorWallet === entry.wallet);
+        
+        // Get transactions for this user's tokens
+        const userTransactions = allTransactions.filter((tx: any) => 
+          userTokens.some((token: any) => token.tokenMint === tx.tokenMint)
+        );
+
+        return {
+          ...entry,
+          tokens: userTokens,
+          transactions: userTransactions,
+        };
+      });
     }
 
     // Sort based on parameter
