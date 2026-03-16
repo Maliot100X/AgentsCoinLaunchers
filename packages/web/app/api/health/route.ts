@@ -10,3 +10,4 @@ export async function GET(request: NextRequest) {
     bags_api_key_present: !!process.env.BAGS_API_KEY,
   });
 }
+// Force redeploy Mon Mar 16 01:10:24 CEST 2026
