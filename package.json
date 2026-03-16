@@ -7,7 +7,8 @@
   ],
   "scripts": {
     "dev": "npm run dev --workspaces",
-    "build": "npm run build --workspaces",
+    "build": "npm run build --workspace=packages/web",
+    "build:all": "npm run build --workspaces",
     "start": "npm run start --workspaces",
     "bot": "npm run dev --workspace=packages/bot",
     "web": "npm run dev --workspace=packages/web",

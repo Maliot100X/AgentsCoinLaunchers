@@ -1,5 +1,5 @@
 {
-  "root": "packages/web",
-  "buildCommand": "npm install --legacy-peer-deps && npm run build",
-  "outputDirectory": ".next"
+  "installCommand": "npm install",
+  "buildCommand": "npm run build",
+  "outputDirectory": "packages/web/.next"
 }
