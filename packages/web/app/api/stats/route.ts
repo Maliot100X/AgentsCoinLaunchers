@@ -4,14 +4,18 @@ import { MongoClient, ServerApiVersion } from 'mongodb';
 export const dynamic = 'force-dynamic';
 export const maxDuration = 10;
 
-export async function GET() {
-  const mongoUri = process.env.MONGODB_URI;
+let cachedClient: MongoClient | null = null;
 
+async function getMongoClient() {
+  const mongoUri = process.env.MONGODB_URI;
+  
   if (!mongoUri) {
-    return NextResponse.json(
-      { error: 'MongoDB URI not configured' },
-      { status: 503 }
-    );
+    throw new Error('MongoDB URI not configured');
+  }
+
+  // Reuse cached connection
+  if (cachedClient) {
+    return cachedClient;
   }
 
   const client = new MongoClient(mongoUri, {
@@ -19,11 +23,19 @@ export async function GET() {
       version: ServerApiVersion.v1,
       strict: true,
       deprecationErrors: true,
-    }
+    },
+    connectTimeoutMS: 5000,
+    socketTimeoutMS: 5000,
   });
 
+  await client.connect();
+  cachedClient = client;
+  return client;
+}
+
+export async function GET() {
   try {
-    await client.connect();
+    const client = await getMongoClient();
     const db = client.db('agentscoinlaunchers');
 
     // Get token count
@@ -45,10 +57,8 @@ export async function GET() {
   } catch (error) {
     console.error('MongoDB query failed:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch stats from database' },
+      { error: 'Failed to fetch stats from database', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 503 }
     );
-  } finally {
-    await client.close();
   }
 }
