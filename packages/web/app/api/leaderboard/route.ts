@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { MongoClient } from 'mongodb';
+import { MongoClient, ServerApiVersion } from 'mongodb';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 10;
@@ -14,7 +14,13 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  const client = new MongoClient(mongoUri);
+  const client = new MongoClient(mongoUri, {
+    serverApi: {
+      version: ServerApiVersion.v1,
+      strict: true,
+      deprecationErrors: true,
+    }
+  });
 
   try {
     await client.connect();
