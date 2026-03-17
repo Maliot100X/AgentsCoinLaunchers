@@ -30,15 +30,22 @@ export default function LaunchedFeed() {
     const fetchLaunchFeed = async () => {
       try {
         setLoading(true);
-        const response = await fetch('/api/bags/launch-feed');
+        // Call Bags API directly from frontend
+        const response = await fetch('https://public-api-v2.bags.fm/api/v1/token-launch/feed', {
+          method: 'GET',
+          headers: {
+            'x-api-key': 'bags_prod_YhTVMoennloNU06kSEDqQ8g_Bdd7_5g7RdcMT1EBr4o',
+            'Content-Type': 'application/json',
+          },
+        });
 
         if (!response.ok) {
-          throw new Error('Failed to load launch feed');
+          throw new Error(`Failed to load launch feed: ${response.status}`);
         }
 
         const data = await response.json();
-        // Filter to only launched tokens if status field exists
-        const launchedTokens = data.data || data.tokens || data || [];
+        // Filter to only launched tokens
+        const launchedTokens = data.response || data.data || data.tokens || data || [];
         setTokens(Array.isArray(launchedTokens) ? launchedTokens : []);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Unknown error');
