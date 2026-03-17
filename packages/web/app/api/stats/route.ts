@@ -56,6 +56,19 @@ export async function GET() {
     });
   } catch (error) {
     console.error('MongoDB query failed:', error);
+    
+    // Return demo data if MongoDB is unavailable (for local development)
+    if (error instanceof Error && (error.message.includes('ECONNREFUSED') || error.message.includes('querySrv'))) {
+      console.log('⚠️ MongoDB unavailable - returning demo stats');
+      return NextResponse.json({
+        tokens: 3,
+        totalVolume: 950000000000,
+        users: 3,
+        status: 'demo',
+        message: 'Using demo data - MongoDB connection failed'
+      });
+    }
+    
     return NextResponse.json(
       { error: 'Failed to fetch stats from database', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 503 }
