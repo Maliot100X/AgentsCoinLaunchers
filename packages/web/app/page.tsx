@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { usePathname } from "next/navigation";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 import TokenLaunch from "../components/TokenLaunch";
@@ -15,9 +16,32 @@ interface HomeProps {
   initialTab?: string;
 }
 
-export default function Home({ initialTab = "home" }: HomeProps) {
+export default function Home() {
   const { connected } = useWallet();
-  const [activeTab, setActiveTab] = useState(initialTab);
+  const pathname = usePathname();
+  
+  // Determine tab from pathname
+  const getTabFromPath = (path: string): string => {
+    const segment = path.split('/')[1] || 'home';
+    const tabMap: { [key: string]: string } = {
+      '': 'home',
+      'home': 'home',
+      'launch': 'launch',
+      'launched': 'launched',
+      'swap': 'swap',
+      'dashboard': 'dashboard',
+      'leaderboard': 'leaderboard',
+      'skills': 'skills',
+    };
+    return tabMap[segment] || 'home';
+  };
+  
+  const [activeTab, setActiveTab] = useState('home');
+  
+  // Sync activeTab with pathname
+  useEffect(() => {
+    setActiveTab(getTabFromPath(pathname));
+  }, [pathname]);
   const [stats, setStats] = useState({
     totalLaunches: 0,
     totalVolume: 0,

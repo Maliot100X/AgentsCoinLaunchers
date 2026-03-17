@@ -3,5 +3,5 @@
 import Home from '../page';
 
 export default function LaunchPage() {
-  return <Home initialTab="launch" />;
+  return <Home />;
 }
