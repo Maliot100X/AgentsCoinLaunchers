@@ -1,0 +1,78 @@
+================================================================================
+                    WINDOWS - SUPER QUICK START
+================================================================================
+
+STEP 1: Start Dev Server (Keep this running in background)
+────────────────────────────────────────────────────────────────────────────
+
+   Open Command Prompt or PowerShell and run:
+   
+   cd Desktop\fulltires\agentscoinlaunchers\packages\web
+   npm run dev
+
+   It will say something like:
+   ✓ Ready in 2.5s
+   ○ Localhost:3002
+
+
+STEP 2: Run Tests (In another terminal/window)
+────────────────────────────────────────────────────────────────────────────
+
+   Option A - EASIEST: Double-click this file
+   ├── QUICKTEST_ALL.bat  ← Double-click it!
+
+   Option B - Command Prompt: 
+   ├── cd Desktop\fulltires\agentscoinlaunchers
+   └── QUICKTEST_ALL.bat
+
+   Option C - Windows Terminal/PowerShell:
+   ├── cd Desktop\fulltires\agentscoinlaunchers
+   └── .\QUICKTEST_ALL.bat
+
+
+STEP 3: View Results in Browser
+────────────────────────────────────────────────────────────────────────────
+
+   Open: http://localhost:3002
+   (or whatever port shows in test output)
+
+
+TROUBLESHOOTING
+────────────────────────────────────────────────────────────────────────────
+
+   ❌ "Dev server not found"
+   → Start dev server first (STEP 1)
+
+   ❌ "Connection refused"
+   → Dev server crashed, restart it (Ctrl+C, then npm run dev)
+
+   ❌ "Port already in use"
+   → Kill other Node processes: taskkill /im node.exe /f
+   → Restart: npm run dev
+
+   ❌ Can't open .bat file
+   → Right-click > Open with > Command Prompt
+   → Or type: cmd.exe, then drag QUICKTEST_ALL.bat into terminal
+
+   ✓ All tests passing?
+   → Good! Your platform is ready!
+
+
+FILES IN THIS FOLDER
+────────────────────────────────────────────────────────────────────────────
+
+   QUICKTEST_ALL.bat           ← USE THIS (pure Windows, double-click works)
+   WINDOWS_TEST_GUIDE.md       ← Detailed Windows instructions
+   TEST_SCRIPTS_README.md      ← All platforms guide
+   QUICKTEST_ADVANCED.sh       ← For Linux/macOS/WSL only
+   QUICK_TEST.sh              ← For Linux/macOS/WSL only
+
+
+NEED HELP?
+────────────────────────────────────────────────────────────────────────────
+
+   → Read WINDOWS_TEST_GUIDE.md for detailed instructions
+   → GitHub: https://github.com/Maliot100X/AgentsCoinLaunchers
+   → Production: https://agentscoinlaunchers.vercel.app
+
+================================================================================
