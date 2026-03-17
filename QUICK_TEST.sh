@@ -6,12 +6,24 @@ echo "║            AgentsCoinLaunchers - Quick Verification               ║"
 echo "╚════════════════════════════════════════════════════════════════════╝"
 echo ""
 
-# Find the dev server port
-PORT=$(lsof -i -P -n | grep "node.*LISTEN" | grep -oP ':\K[0-9]+' | head -1)
+# Find the dev server port - try multiple methods
+PORT=""
+
+# Try common Next.js dev ports
+for p in 3000 3001 3002 3003 3004 3005; do
+  if curl -s http://localhost:$p > /dev/null 2>&1; then
+    PORT=$p
+    break
+  fi
+done
 
 if [ -z "$PORT" ]; then
   echo "❌ Dev server not running!"
-  echo "Start it with: cd packages/web && npm run dev"
+  echo ""
+  echo "To start the dev server:"
+  echo "  cd packages/web"
+  echo "  npm run dev"
+  echo ""
   exit 1
 fi
 
