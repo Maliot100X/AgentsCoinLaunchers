@@ -31,9 +31,7 @@ export async function GET(request: NextRequest) {
     }
 
     const data = await response.json();
-    // Extract just the token array from Bags response
-    // Bags returns: { success: true, response: [...tokens] }
-    return NextResponse.json(data.response || []);
+    return NextResponse.json(data);
   } catch (error) {
     console.error('Error fetching Bags launch feed:', error);
     return NextResponse.json(
