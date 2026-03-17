@@ -1,5 +1,6 @@
 'use client';
 
+// Token Feed Tabs Component - Real-time token data by status
 import { useEffect, useState } from 'react';
 import { RefreshCw, TrendingUp } from 'lucide-react';
 
