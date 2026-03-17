@@ -68,81 +68,92 @@ export default function TokenFeedTabs() {
     activeTab === 'pregrads' ? preGradTokens :
     graduatedTokens;
 
-  const renderTokenCard = (token: Token) => (
-    <div
-      key={token.launchSignature}
-      className="bg-slate-800/50 border border-slate-700 rounded-lg p-4 hover:border-purple-500/50 transition-all"
-    >
-      {/* Token Image */}
-      {token.image && (
-        <div className="w-full h-24 bg-slate-700 rounded mb-3 flex items-center justify-center overflow-hidden">
-          <img
-            src={token.image}
-            alt={token.name}
-            className="w-full h-full object-cover"
-            onError={(e) => {
-              (e.target as HTMLImageElement).style.display = 'none';
-            }}
-          />
+  const renderTokenCard = (token: Token) => {
+    try {
+      return (
+        <div
+          key={token.launchSignature}
+          className="bg-slate-800/50 border border-slate-700 rounded-lg p-4 hover:border-purple-500/50 transition-all"
+        >
+          {/* Token Image */}
+          {token.image && (
+            <div className="w-full h-24 bg-slate-700 rounded mb-3 flex items-center justify-center overflow-hidden">
+              <img
+                src={token.image}
+                alt={token.name}
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  try {
+                    (e.target as HTMLImageElement).style.display = 'none';
+                  } catch (err) {
+                    console.error('Image error:', err);
+                  }
+                }}
+              />
+            </div>
+          )}
+
+          {/* Token Info */}
+          <h3 className="font-bold text-sm mb-1 truncate">{token.name}</h3>
+          <p className="text-slate-400 text-xs mb-2">{token.symbol}</p>
+          
+          {token.description && (
+            <p className="text-slate-400 text-xs mb-3 line-clamp-2">
+              {token.description}
+            </p>
+          )}
+
+          {/* Token Mint */}
+          <div className="bg-slate-900/50 p-2 rounded mb-3">
+            <p className="text-xs text-slate-500">Mint</p>
+            <p className="text-xs font-mono text-blue-400 break-all">{token.tokenMint.slice(0, 20)}...</p>
+          </div>
+
+          {/* Status Badge */}
+          {token.status && (
+            <div className="mb-3">
+              <span className={`text-xs px-2 py-1 rounded ${
+                token.status === 'MIGRATED'
+                  ? 'bg-green-900/50 text-green-400'
+                  : token.status === 'PRE_GRAD'
+                  ? 'bg-yellow-900/50 text-yellow-400'
+                  : 'bg-blue-900/50 text-blue-400'
+              }`}>
+                {token.status}
+              </span>
+            </div>
+          )}
+
+          {/* Links */}
+          <div className="flex gap-2 pt-2 border-t border-slate-700">
+            {token.twitter && (
+              <a
+                href={token.twitter}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex-1 px-2 py-1 bg-blue-900/30 hover:bg-blue-900/50 text-blue-300 text-xs rounded transition text-center truncate"
+              >
+                X
+              </a>
+            )}
+            {token.website && (
+              <a
+                href={token.website}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex-1 px-2 py-1 bg-slate-700/30 hover:bg-slate-700/50 text-slate-300 text-xs rounded transition text-center truncate"
+              >
+                Web
+              </a>
+            )}
+          </div>
         </div>
-      )}
-
-      {/* Token Info */}
-      <h3 className="font-bold text-sm mb-1 truncate">{token.name}</h3>
-      <p className="text-slate-400 text-xs mb-2">{token.symbol}</p>
-      
-      {token.description && (
-        <p className="text-slate-400 text-xs mb-3 line-clamp-2">
-          {token.description}
-        </p>
-      )}
-
-      {/* Token Mint */}
-      <div className="bg-slate-900/50 p-2 rounded mb-3">
-        <p className="text-xs text-slate-500">Mint</p>
-        <p className="text-xs font-mono text-blue-400 break-all">{token.tokenMint.slice(0, 20)}...</p>
-      </div>
-
-      {/* Status Badge */}
-      {token.status && (
-        <div className="mb-3">
-          <span className={`text-xs px-2 py-1 rounded ${
-            token.status === 'MIGRATED'
-              ? 'bg-green-900/50 text-green-400'
-              : token.status === 'PRE_GRAD'
-              ? 'bg-yellow-900/50 text-yellow-400'
-              : 'bg-blue-900/50 text-blue-400'
-          }`}>
-            {token.status}
-          </span>
-        </div>
-      )}
-
-      {/* Links */}
-      <div className="flex gap-2 pt-2 border-t border-slate-700">
-        {token.twitter && (
-          <a
-            href={token.twitter}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex-1 px-2 py-1 bg-blue-900/30 hover:bg-blue-900/50 text-blue-300 text-xs rounded transition text-center truncate"
-          >
-            X
-          </a>
-        )}
-        {token.website && (
-          <a
-            href={token.website}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex-1 px-2 py-1 bg-slate-700/30 hover:bg-slate-700/50 text-slate-300 text-xs rounded transition text-center truncate"
-          >
-            Web
-          </a>
-        )}
-      </div>
-    </div>
-  );
+      );
+    } catch (err) {
+      console.error('Error rendering token card:', err);
+      return null;
+    }
+  };
 
   return (
     <div className="w-full">

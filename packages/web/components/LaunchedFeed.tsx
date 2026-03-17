@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { Copy, Check } from 'lucide-react';
 import TokenFeedTabs from './TokenFeedTabs';
+import ErrorBoundary from './ErrorBoundary';
 
 interface LaunchFeedToken {
   name: string;
@@ -221,7 +222,9 @@ export default function LaunchedFeed() {
         <h2 className="text-2xl font-bold mb-6">📊 Token Feed by Status</h2>
         
         {/* Bottom Section: Token Feed Tabs with Real-Time Data */}
-        <TokenFeedTabs />
+        <ErrorBoundary>
+          <TokenFeedTabs />
+        </ErrorBoundary>
       </div>
     </div>
   );
