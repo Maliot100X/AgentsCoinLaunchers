@@ -8,6 +8,7 @@ import SwapInterface from "../components/SwapInterface";
 import SkillsShowcase from "../components/SkillsShowcase";
 import Dashboard from "../components/Dashboard";
 import Leaderboard from "../components/Leaderboard";
+import LaunchedFeed from "../components/LaunchedFeed";
 import Link from "next/link";
 
 export default function Home() {
@@ -149,6 +150,7 @@ export default function Home() {
             {[
               { id: 'home', label: '🏠 Home', icon: '🏠' },
               { id: 'launch', label: '🚀 Launch', icon: '🚀' },
+              { id: 'launched', label: '🪙 Launched', icon: '🪙' },
               { id: 'swap', label: '🔄 Swap', icon: '🔄' },
               { id: 'skills', label: '📚 Skills', icon: '📚' },
               { id: 'dashboard', label: '📊 Dashboard', icon: '📊' },
@@ -223,6 +225,7 @@ export default function Home() {
             )}
 
             {activeTab === 'launch' && <TokenLaunch />}
+            {activeTab === 'launched' && <LaunchedFeed />}
             {activeTab === 'swap' && <SwapInterface />}
             {activeTab === 'skills' && <SkillsShowcase />}
             {activeTab === 'dashboard' && <Dashboard />}
