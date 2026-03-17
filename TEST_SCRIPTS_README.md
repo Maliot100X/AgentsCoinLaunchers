@@ -14,25 +14,20 @@ This directory contains three test scripts to verify your AgentsCoinLaunchers in
 
 ## Windows Users (Recommended)
 
-### Option 1: Double-Click (Easiest)
-```
-1. Right-click QUICKTEST_ALL.bat
-2. Click "Open"
-3. A terminal window opens and runs all tests
-4. Press any key when done
+### 👉 **[READ WINDOWS_TEST_GUIDE.md FIRST!](WINDOWS_TEST_GUIDE.md)**
+
+### Quick Start
+```cmd
+1. Double-click: QUICKTEST_ALL.bat
 ```
 
-### Option 2: Command Prompt
+### Or in Command Prompt/Terminal
 ```cmd
 cd agentscoinlaunchers
 QUICKTEST_ALL.bat
 ```
 
-### Option 3: PowerShell
-```powershell
-cd agentscoinlaunchers
-.\QUICKTEST_ALL.bat
-```
+For detailed instructions, see **WINDOWS_TEST_GUIDE.md**
 
 ---
 
