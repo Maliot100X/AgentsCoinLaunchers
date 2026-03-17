@@ -174,7 +174,7 @@ export default function TokenFeedTabs() {
     <div className="w-full">
       {(() => {
         console.log('[TokenFeedTabs] RENDERING COMPONENT, activeTokens length:', activeTokens.length);
-        return null;
+        return undefined;
       })()}
       {/* Mini Tab Navigation */}
       <div className="flex gap-2 mb-6 border-b border-slate-700 pb-4">
