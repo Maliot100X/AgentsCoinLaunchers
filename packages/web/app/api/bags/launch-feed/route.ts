@@ -33,7 +33,7 @@ export async function GET() {
       return NextResponse.json({ response: [] });
     }
 
-    // Filter to only first 20 tokens and only needed fields
+    // Filter to only first 20 tokens and only needed fields (strip unnecessary bloat)
     const filteredTokens = tokens.slice(0, 20).map((token: any) => ({
       name: token.name || '',
       symbol: token.symbol || '',
@@ -44,11 +44,6 @@ export async function GET() {
       twitter: token.twitter || '',
       website: token.website || '',
       launchSignature: token.launchSignature || token.signature || '',
-      accountKeys: token.accountKeys || [],
-      numRequiredSigners: token.numRequiredSigners || 0,
-      uri: token.uri || '',
-      dbcPoolKey: token.dbcPoolKey || '',
-      dbcConfigKey: token.dbcConfigKey || '',
     }));
 
     console.log('[launch-feed] Returning filtered tokens:', filteredTokens.length);
