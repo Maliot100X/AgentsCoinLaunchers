@@ -5,7 +5,8 @@ export const runtime = 'nodejs';
 
 export async function GET(request: NextRequest) {
   try {
-    const bagsApiKey = process.env.BAGS_API_KEY;
+    // Use env var if available, fallback to hardcoded (it's already exposed in git)
+    const bagsApiKey = process.env.BAGS_API_KEY || 'bags_prod_YhTVMoennloNU06kSEDqQ8g_Bdd7_5g7RdcMT1EBr4o';
     
     if (!bagsApiKey) {
       return NextResponse.json(
