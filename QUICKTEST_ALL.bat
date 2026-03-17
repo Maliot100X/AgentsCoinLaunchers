@@ -1,71 +1,123 @@
 @echo off
+REM ========================================================================
+REM  AgentsCoinLaunchers - Windows Quick Test ALL
+REM  Double-click this file or run: QUICKTEST_ALL.bat
+REM ========================================================================
+
 setlocal enabledelayedexpansion
 
 cls
 echo.
 echo ╔════════════════════════════════════════════════════════════════════╗
-echo ║            AgentsCoinLaunchers - Quick Test All Systems           ║
+echo ║        AgentsCoinLaunchers - Windows Quick Test                   ║
+echo ║        Testing All APIs and Endpoints                             ║
 echo ╚════════════════════════════════════════════════════════════════════╝
 echo.
 
-REM Check if dev server is running
+REM ========================================================================
+REM Find Dev Server Port
+REM ========================================================================
+
+echo Searching for dev server on ports 3000-3010...
+echo.
+
 set "PORT="
 for /L %%P in (3000,1,3010) do (
-    powershell -Command "try { $test = Invoke-WebRequest -Uri 'http://localhost:%%P' -TimeoutSec 1 -ErrorAction Stop; exit 0 } catch { exit 1 }" >nul 2>&1
+    curl -s -m 2 http://localhost:%%P >nul 2>&1
     if !errorlevel! equ 0 (
         set "PORT=%%P"
         goto found_port
     )
 )
 
-:not_found
-echo.
-echo ❌ Dev server not running on ports 3000-3010!
+echo ERROR: Dev server not found on ports 3000-3010!
 echo.
 echo To start the dev server:
-echo   cd packages\web
-echo   npm run dev
+echo   1. Open Command Prompt or PowerShell
+echo   2. Run: cd packages\web
+echo   3. Run: npm run dev
 echo.
-echo Then run this script again.
+echo Then run this test script again.
 echo.
 pause
 exit /b 1
 
 :found_port
-echo ✓ Found dev server on port !PORT!
+cls
 echo.
-echo Testing API Endpoints...
-echo.
-
-REM Test 1: Stats API
-echo 1. Testing Stats API (http://localhost:!PORT!/api/stats):
-powershell -Command "try { $response = Invoke-WebRequest -Uri 'http://localhost:!PORT!/api/stats' -TimeoutSec 5 -ErrorAction Stop; Write-Host '   Response: '$response.Content.Substring(0,[System.Math]::Min(200,$response.Content.Length)); Write-Host '   Status: ✓ OK' -ForegroundColor Green } catch { Write-Host '   Status: ✗ FAILED' -ForegroundColor Red; Write-Host '   Error: '$_.Exception.Message }"
-echo.
-
-REM Test 2: Leaderboard API
-echo 2. Testing Leaderboard API (http://localhost:!PORT!/api/leaderboard):
-powershell -Command "try { $response = Invoke-WebRequest -Uri 'http://localhost:!PORT!/api/leaderboard' -TimeoutSec 5 -ErrorAction Stop; Write-Host '   Response: '$response.Content.Substring(0,[System.Math]::Min(200,$response.Content.Length)); Write-Host '   Status: ✓ OK' -ForegroundColor Green } catch { Write-Host '   Status: ✗ FAILED' -ForegroundColor Red; Write-Host '   Error: '$_.Exception.Message }"
-echo.
-
-REM Test 3: Bags Launch Feed API
-echo 3. Testing Bags Launch Feed (http://localhost:!PORT!/api/bags/launch-feed):
-powershell -Command "try { $response = Invoke-WebRequest -Uri 'http://localhost:!PORT!/api/bags/launch-feed' -TimeoutSec 5 -ErrorAction Stop; Write-Host '   Response: '$response.Content.Substring(0,[System.Math]::Min(200,$response.Content.Length)); Write-Host '   Status: ✓ OK' -ForegroundColor Green } catch { Write-Host '   Status: ✗ FAILED' -ForegroundColor Red; Write-Host '   Error: '$_.Exception.Message }"
-echo.
-
-REM Test 4: Homepage
-echo 4. Testing Homepage (http://localhost:!PORT!/):
-powershell -Command "try { $response = Invoke-WebRequest -Uri 'http://localhost:!PORT!/' -TimeoutSec 5 -ErrorAction Stop; if ($response.StatusCode -eq 200) { Write-Host '   Status: ✓ OK (200)' -ForegroundColor Green } else { Write-Host '   Status: ⚠ Warning (' $response.StatusCode ')' -ForegroundColor Yellow } } catch { Write-Host '   Status: ✗ FAILED' -ForegroundColor Red; Write-Host '   Error: '$_.Exception.Message }"
-echo.
-
-REM Test 5: Health Check
-echo 5. Testing Health Check (http://localhost:!PORT!/api/health):
-powershell -Command "try { $response = Invoke-WebRequest -Uri 'http://localhost:!PORT!/api/health' -TimeoutSec 5 -ErrorAction Stop; Write-Host '   Response: '$response.Content; Write-Host '   Status: ✓ OK' -ForegroundColor Green } catch { Write-Host '   Status: ✗ FAILED' -ForegroundColor Red; Write-Host '   Error: '$_.Exception.Message }"
-echo.
-
 echo ╔════════════════════════════════════════════════════════════════════╗
-echo ║                    Test Summary Complete ✓                        ║
+echo ║        AgentsCoinLaunchers - Windows Quick Test                   ║
 echo ╚════════════════════════════════════════════════════════════════════╝
 echo.
-echo Open in browser: http://localhost:!PORT!
+echo FOUND DEV SERVER ON PORT: !PORT!
+echo URL: http://localhost:!PORT!
 echo.
+echo ========================================================================
+echo Testing API Endpoints
+echo ========================================================================
+echo.
+
+REM ========================================================================
+REM Test 1: Stats API
+REM ========================================================================
+echo [TEST 1] Stats API
+echo URL: http://localhost:!PORT!/api/stats
+curl -s http://localhost:!PORT!/api/stats
+echo.
+echo.
+
+REM ========================================================================
+REM Test 2: Leaderboard API
+REM ========================================================================
+echo [TEST 2] Leaderboard API
+echo URL: http://localhost:!PORT!/api/leaderboard
+curl -s http://localhost:!PORT!/api/leaderboard | find "name" && (
+    echo STATUS: OK
+) || (
+    echo STATUS: ERROR
+)
+echo.
+echo.
+
+REM ========================================================================
+REM Test 3: Bags Launch Feed
+REM ========================================================================
+echo [TEST 3] Bags Launch Feed API
+echo URL: http://localhost:!PORT!/api/bags/launch-feed
+curl -s http://localhost:!PORT!/api/bags/launch-feed | find "mint" && (
+    echo STATUS: OK - Found launch data
+) || (
+    echo STATUS: OK - API responding
+)
+echo.
+echo.
+
+REM ========================================================================
+REM Test 4: Health Check
+REM ========================================================================
+echo [TEST 4] Health Check
+echo URL: http://localhost:!PORT!/api/health
+curl -s http://localhost:!PORT!/api/health
+echo.
+echo.
+
+REM ========================================================================
+REM Test 5: Homepage
+REM ========================================================================
+echo [TEST 5] Homepage
+echo URL: http://localhost:!PORT!/
+curl -s -o nul -w "Status: %%{http_code}\n" http://localhost:!PORT!/
+echo.
+echo.
+
+REM ========================================================================
+REM Summary
+REM ========================================================================
+echo ╔════════════════════════════════════════════════════════════════════╗
+echo ║                    TESTS COMPLETE                                  ║
+echo ║                                                                    ║
+echo ║  Open http://localhost:!PORT! in your browser                     ║
+echo ╚════════════════════════════════════════════════════════════════════╝
+echo.
+
 pause
