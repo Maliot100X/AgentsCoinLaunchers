@@ -37,9 +37,9 @@ export default function LaunchedFeed() {
         }
 
         const data = await response.json();
-        // Filter to only launched tokens if status field exists
-        const launchedTokens = data.data || data.tokens || data || [];
-        setTokens(Array.isArray(launchedTokens) ? launchedTokens : []);
+        // Now data is directly the array of tokens (already extracted by API)
+        const launchedTokens = Array.isArray(data) ? data : data.data || data.tokens || [];
+        setTokens(launchedTokens);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Unknown error');
         console.error('Error fetching launch feed:', err);
