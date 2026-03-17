@@ -3,5 +3,5 @@
 import Home from '../page';
 
 export default function DashboardPage() {
-  return <Home />;
+  return <Home initialTab="dashboard" />;
 }
