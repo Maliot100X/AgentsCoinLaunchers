@@ -1,44 +1,20 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
-export const runtime = 'nodejs';
+export const maxDuration = 60;
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
-    // Use env var if available, fallback to hardcoded (it's already exposed in git)
-    const bagsApiKey = process.env.BAGS_API_KEY || 'bags_prod_YhTVMoennloNU06kSEDqQ8g_Bdd7_5g7RdcMT1EBr4o';
-    
-    if (!bagsApiKey) {
-      return NextResponse.json(
-        { error: 'BAGS_API_KEY is not configured' },
-        { status: 500 }
-      );
-    }
+    const BAGS_KEY = 'bags_prod_YhTVMoennloNU06kSEDqQ8g_Bdd7_5g7RdcMT1EBr4o';
 
-    const response = await fetch('https://public-api-v2.bags.fm/api/v1/token-launch/feed', {
-      method: 'GET',
-      headers: {
-        'x-api-key': bagsApiKey,
-        'Content-Type': 'application/json',
-      },
+    const res = await fetch('https://public-api-v2.bags.fm/api/v1/token-launch/feed', {
+      headers: { 'x-api-key': BAGS_KEY },
       cache: 'no-store',
     });
 
-    if (!response.ok) {
-      console.error('Bags API error:', response.status, response.statusText);
-      return NextResponse.json(
-        { error: 'Failed to fetch from Bags API' },
-        { status: 500 }
-      );
-    }
-
-    const data = await response.json();
-    return NextResponse.json(data);
-  } catch (error) {
-    console.error('Error fetching Bags launch feed:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    if (!res.ok) throw new Error(`API error: ${res.status}`);
+    return NextResponse.json(await res.json());
+  } catch (e) {
+    return NextResponse.json({ error: String(e) }, { status: 500 });
   }
 }
