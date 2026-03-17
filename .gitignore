@@ -32,3 +32,9 @@ Thumbs.db
 
 # Temporary files
 .tmp/
+VERCEL_ENV_TEMPLATE.txt
+VERCEL_DEPLOYMENT_FIX.txt
+FINAL_VERCEL_INSTRUCTIONS.txt
+.env.local
+.env
+*.env
