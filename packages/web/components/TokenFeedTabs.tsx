@@ -30,30 +30,43 @@ export default function TokenFeedTabs() {
   const fetchTokens = async () => {
     try {
       setLoading(true);
+      console.log('[TokenFeedTabs] Starting fetch from /api/bags/launch-feed');
+      
       const response = await fetch('/api/bags/launch-feed');
+      console.log('[TokenFeedTabs] Response status:', response.status);
       
       if (!response.ok) {
         throw new Error('Failed to load tokens');
       }
 
       const data = await response.json();
+      console.log('[TokenFeedTabs] Data received:', data);
+      console.log('[TokenFeedTabs] Response array length:', data.response?.length);
+      
       const allTokens = data.response || [];
+      console.log('[TokenFeedTabs] Setting tokens, count:', allTokens.length);
+      
       setTokens(allTokens);
       setLastRefresh(new Date());
       setError(null);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unknown error');
-      console.error('Error fetching tokens:', err);
+      const errorMsg = err instanceof Error ? err.message : 'Unknown error';
+      console.error('[TokenFeedTabs] Error:', errorMsg);
+      setError(errorMsg);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
+    console.log('[TokenFeedTabs] Component mounted, calling fetchTokens');
     fetchTokens();
     
     // Refresh every 5 minutes
-    const interval = setInterval(fetchTokens, 5 * 60 * 1000);
+    const interval = setInterval(() => {
+      console.log('[TokenFeedTabs] 5-minute auto-refresh triggered');
+      fetchTokens();
+    }, 5 * 60 * 1000);
     
     return () => clearInterval(interval);
   }, []);
@@ -62,6 +75,8 @@ export default function TokenFeedTabs() {
   const newTokens = tokens.filter(t => !t.status || t.status === 'PRE_GRAD').slice(0, 15);
   const preGradTokens = tokens.filter(t => t.status === 'PRE_GRAD').slice(0, 15);
   const graduatedTokens = tokens.filter(t => t.status === 'MIGRATED').slice(0, 15);
+  
+  console.log('[TokenFeedTabs] Filters: new=', newTokens.length, 'pregrad=', preGradTokens.length, 'graduated=', graduatedTokens.length);
 
   const activeTokens = 
     activeTab === 'new' ? newTokens :
