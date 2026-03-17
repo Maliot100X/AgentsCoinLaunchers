@@ -19,6 +19,7 @@ interface HomeProps {
 export default function Home() {
   const { connected } = useWallet();
   const pathname = usePathname();
+  const [mounted, setMounted] = useState(false);
   
   // Determine tab from pathname
   const getTabFromPath = (path: string): string => {
@@ -38,8 +39,9 @@ export default function Home() {
   
   const [activeTab, setActiveTab] = useState('home');
   
-  // Sync activeTab with pathname
+  // Initialize from pathname on client mount
   useEffect(() => {
+    setMounted(true);
     setActiveTab(getTabFromPath(pathname));
   }, [pathname]);
   const [stats, setStats] = useState({
