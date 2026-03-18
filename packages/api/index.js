@@ -14,7 +14,29 @@ const PORT = process.env.PORT || 3001;
 // ============================================================================
 // MIDDLEWARE
 // ============================================================================
-app.use(cors());
+// Configure CORS to allow only specific origins
+const corsOptions = {
+  origin: function(origin, callback) {
+    const allowedOrigins = [
+      'http://localhost:3000',
+      'http://localhost:3001',
+      'https://agentscoinlaunchers.vercel.app',
+      'https://www.agentscoinlaunchers.vercel.app',
+    ];
+    
+    // Allow requests with no origin (mobile apps, curl requests)
+    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('CORS not allowed'));
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
 
 // ============================================================================
@@ -1096,10 +1118,19 @@ app.get('/api/bags/stats', bagsTracker.routes.getStats);
 
 app.use((err, req, res, next) => {
   console.error('❌ Server error:', err);
-  res.status(500).json({
-    error: 'Internal server error',
-    message: err.message
-  });
+  
+  // Don't leak stack traces or internal errors to clients
+  const isDevelopment = process.env.NODE_ENV === 'development';
+  const errorResponse = {
+    error: 'Internal server error'
+  };
+  
+  // Only include message in development
+  if (isDevelopment) {
+    errorResponse.message = err.message;
+  }
+  
+  res.status(err.status || 500).json(errorResponse);
 });
 
 // ============================================================================
