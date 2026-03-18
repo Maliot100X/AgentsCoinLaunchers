@@ -45,6 +45,7 @@ export default function TokenFeedTabs() {
       
       const allTokens = data.response || [];
       console.log('[TokenFeedTabs] Setting tokens, count:', allTokens.length);
+      console.log('[TokenFeedTabs] First 3 tokens status:', allTokens.slice(0, 3).map((t: Token) => ({ name: t.name, status: t.status, holders: t.holders })));
       
       setTokens(allTokens);
       setLastRefresh(new Date());
@@ -76,6 +77,10 @@ export default function TokenFeedTabs() {
   const preGradTokens = tokens.filter(t => t.status === 'PRE_GRAD').slice(0, 15);
   const graduatedTokens = tokens.filter(t => t.status === 'GRADUATED').slice(0, 15);
   
+  // Debug: log actual status values in tokens
+  if (tokens.length > 0) {
+    console.log('[TokenFeedTabs] Token statuses sample:', tokens.slice(0, 5).map(t => ({ name: t.name, status: t.status, holders: t.holders })));
+  }
   console.log('[TokenFeedTabs] Filters: new=', newTokens.length, 'pregrad=', preGradTokens.length, 'graduated=', graduatedTokens.length);
 
   const activeTokens = 
