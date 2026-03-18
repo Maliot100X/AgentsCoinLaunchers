@@ -34,38 +34,17 @@ export async function GET() {
       return NextResponse.json({ response: [] });
     }
 
-    // Filter to 50 tokens and categorize by age (since holders data isn't reliable from API)
-    const now = Date.now();
+    // Distribute tokens across three categories
+    // First 16 = NEW_LAUNCH, Next 17 = PRE_GRAD, Rest = GRADUATED
     const filteredTokens = tokens.slice(0, 50).map((token: any, index: number) => {
-      // Use token age for categorization since holders data is unreliable
-      // Assume tokens are ordered by recency from Bags API
       let status = 'NEW_LAUNCH';
       
-      // Categorize based on position in feed (newer = lower index)
-      // New Launches: positions 0-15 (most recent)
-      // About to Graduate: positions 16-32 (medium age)
-      // Graduated: positions 33+ (older)
       if (index >= 33) {
-        status = 'GRADUATED'; // Oldest tokens in feed
+        status = 'GRADUATED'; // Positions 33-49 (17 tokens)
       } else if (index >= 16) {
-        status = 'PRE_GRAD'; // Medium age tokens
+        status = 'PRE_GRAD'; // Positions 16-32 (17 tokens)
       } else {
-        status = 'NEW_LAUNCH'; // Most recent tokens
-      }
-
-      // Also use createdAt timestamp if available for better accuracy
-      if (token.createdAt) {
-        const tokenAge = now - new Date(token.createdAt).getTime();
-        const hoursOld = tokenAge / (1000 * 60 * 60);
-        
-        // Refine status based on actual timestamp
-        if (hoursOld > 48) {
-          status = 'GRADUATED'; // Launched 48+ hours ago
-        } else if (hoursOld > 24) {
-          status = 'PRE_GRAD'; // Launched 24-48 hours ago
-        } else {
-          status = 'NEW_LAUNCH'; // Launched < 24 hours ago
-        }
+        status = 'NEW_LAUNCH'; // Positions 0-15 (16 tokens)
       }
 
       return {
