@@ -34,20 +34,40 @@ export async function GET() {
       return NextResponse.json({ response: [] });
     }
 
-    // Filter to only first 50 tokens and categorize by holder count
-    const filteredTokens = tokens.slice(0, 50).map((token: any) => {
-      // Determine status based on holder count
-      const holders = token.holders || 0;
+    // Filter to 50 tokens and categorize by age (since holders data isn't reliable from API)
+    const now = Date.now();
+    const filteredTokens = tokens.slice(0, 50).map((token: any, index: number) => {
+      // Use token age for categorization since holders data is unreliable
+      // Assume tokens are ordered by recency from Bags API
       let status = 'NEW_LAUNCH';
       
-      if (holders >= 1000) {
-        status = 'GRADUATED'; // Graduated: 1000+ holders
-      } else if (holders >= 100) {
-        status = 'PRE_GRAD'; // About to graduate: 100-999 holders
+      // Categorize based on position in feed (newer = lower index)
+      // New Launches: positions 0-15 (most recent)
+      // About to Graduate: positions 16-32 (medium age)
+      // Graduated: positions 33+ (older)
+      if (index >= 33) {
+        status = 'GRADUATED'; // Oldest tokens in feed
+      } else if (index >= 16) {
+        status = 'PRE_GRAD'; // Medium age tokens
       } else {
-        status = 'NEW_LAUNCH'; // New launches: < 100 holders
+        status = 'NEW_LAUNCH'; // Most recent tokens
       }
-      
+
+      // Also use createdAt timestamp if available for better accuracy
+      if (token.createdAt) {
+        const tokenAge = now - new Date(token.createdAt).getTime();
+        const hoursOld = tokenAge / (1000 * 60 * 60);
+        
+        // Refine status based on actual timestamp
+        if (hoursOld > 48) {
+          status = 'GRADUATED'; // Launched 48+ hours ago
+        } else if (hoursOld > 24) {
+          status = 'PRE_GRAD'; // Launched 24-48 hours ago
+        } else {
+          status = 'NEW_LAUNCH'; // Launched < 24 hours ago
+        }
+      }
+
       return {
         name: token.name || '',
         symbol: token.symbol || '',
@@ -55,7 +75,7 @@ export async function GET() {
         image: token.image || '',
         tokenMint: token.tokenMint || token.mint || '',
         status: status,
-        holders: holders,
+        holders: token.holders || 0,
         volume24h: token.volume24h || 0,
         twitter: token.twitter || '',
         website: token.website || '',
