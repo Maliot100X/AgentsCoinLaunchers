@@ -5,8 +5,9 @@ require('dotenv').config();
 const fs = require('fs');
 const path = require('path');
 
-// Import Bags tracker
+// Import Bags tracker and validation utilities
 const bagsTracker = require('./bags-tracker');
+const validation = require('./validation');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -472,23 +473,25 @@ app.get('/api/tokens', async (req, res) => {
     const { status, sort = '-createdAt', limit = 50 } = req.query;
 
     // Validate sort parameter
-    const validSortFields = ['createdAt', 'volume24h', 'holders', 'trendingScore'];
-    const sortField = sort?.replace(/^-/, '') || 'createdAt';
-    if (!validSortFields.includes(sortField)) {
+    if (!validation.validateSortField(sort)) {
       return res.status(400).json({ error: 'Invalid sort field' });
     }
 
     // Validate status parameter - only allow whitelisted values
-    const validStatuses = ['NEW_LAUNCH', 'PRE_GRAD', 'GRADUATED'];
     let query = {};
     if (status) {
-      if (!validStatuses.includes(status)) {
+      if (!validation.validateTokenStatus(status)) {
         return res.status(400).json({ error: 'Invalid status value' });
       }
       query.status = status;
     }
 
-    const limitNum = Math.min(Math.max(parseInt(limit, 10) || 50, 1), 100); // Clamp between 1-100
+    // Validate and clamp limit
+    if (!validation.validateNumberRange(limit, 1, 100)) {
+      return res.status(400).json({ error: 'Invalid limit value (must be 1-100)' });
+    }
+    const limitNum = Math.min(Math.max(parseInt(limit, 10) || 50, 1), 100);
+
     const tokens = await Token.find(query)
       .sort(sort)
       .limit(limitNum);
@@ -1048,7 +1051,7 @@ app.get('/api/skills/:skillId', async (req, res) => {
     const { skillId } = req.params;
     
     // Security: Validate skillId to prevent path traversal attacks
-    if (!/^[a-zA-Z0-9_-]+$/.test(skillId)) {
+    if (!validation.validateSkillId(skillId)) {
       return res.status(400).json({ error: 'Invalid skill ID format' });
     }
     
