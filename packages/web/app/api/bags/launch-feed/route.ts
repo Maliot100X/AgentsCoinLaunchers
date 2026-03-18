@@ -6,7 +6,15 @@ export const revalidate = 0;
 
 export async function GET() {
   try {
-    const BAGS_KEY = 'bags_prod_YhTVMoennloNU06kSEDqQ8g_Bdd7_5g7RdcMT1EBr4o';
+    const BAGS_KEY = process.env.BAGS_API_KEY;
+    
+    if (!BAGS_KEY) {
+      console.error('[launch-feed] BAGS_API_KEY environment variable is not set');
+      return NextResponse.json(
+        { error: 'API configuration error' },
+        { status: 500 }
+      );
+    }
 
     console.log('[launch-feed] Fetching from Bags.fm API...');
     const res = await fetch('https://public-api-v2.bags.fm/api/v1/token-launch/feed', {

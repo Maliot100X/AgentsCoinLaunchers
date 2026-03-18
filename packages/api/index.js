@@ -449,12 +449,27 @@ app.get('/api/tokens', async (req, res) => {
   try {
     const { status, sort = '-createdAt', limit = 50 } = req.query;
 
-    let query = {};
-    if (status) query.status = status;
+    // Validate sort parameter
+    const validSortFields = ['createdAt', 'volume24h', 'holders', 'trendingScore'];
+    const sortField = sort?.replace(/^-/, '') || 'createdAt';
+    if (!validSortFields.includes(sortField)) {
+      return res.status(400).json({ error: 'Invalid sort field' });
+    }
 
+    // Validate status parameter - only allow whitelisted values
+    const validStatuses = ['NEW_LAUNCH', 'PRE_GRAD', 'GRADUATED'];
+    let query = {};
+    if (status) {
+      if (!validStatuses.includes(status)) {
+        return res.status(400).json({ error: 'Invalid status value' });
+      }
+      query.status = status;
+    }
+
+    const limitNum = Math.min(Math.max(parseInt(limit, 10) || 50, 1), 100); // Clamp between 1-100
     const tokens = await Token.find(query)
       .sort(sort)
-      .limit(parseInt(limit));
+      .limit(limitNum);
 
     res.json(tokens);
   } catch (error) {
@@ -1009,7 +1024,20 @@ app.get('/api/skills', async (req, res) => {
 app.get('/api/skills/:skillId', async (req, res) => {
   try {
     const { skillId } = req.params;
+    
+    // Security: Validate skillId to prevent path traversal attacks
+    if (!/^[a-zA-Z0-9_-]+$/.test(skillId)) {
+      return res.status(400).json({ error: 'Invalid skill ID format' });
+    }
+    
     const skillPath = path.join(__dirname, '../../docs/skills', `${skillId}.md`);
+    const skillsDir = path.resolve(__dirname, '../../docs/skills');
+    const resolvedPath = path.resolve(skillPath);
+    
+    // Ensure the resolved path is within the skills directory
+    if (!resolvedPath.startsWith(skillsDir)) {
+      return res.status(400).json({ error: 'Invalid skill path' });
+    }
     
     if (!fs.existsSync(skillPath)) {
       return res.status(404).json({ error: `Skill '${skillId}' not found` });
