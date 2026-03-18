@@ -71,10 +71,10 @@ export default function TokenFeedTabs() {
     return () => clearInterval(interval);
   }, []);
 
-  // Filter tokens by category
-  const newTokens = tokens.filter(t => !t.status || t.status === 'PRE_GRAD').slice(0, 15);
+  // Filter tokens by category based on holder count status
+  const newTokens = tokens.filter(t => t.status === 'NEW_LAUNCH').slice(0, 15);
   const preGradTokens = tokens.filter(t => t.status === 'PRE_GRAD').slice(0, 15);
-  const graduatedTokens = tokens.filter(t => t.status === 'MIGRATED').slice(0, 15);
+  const graduatedTokens = tokens.filter(t => t.status === 'GRADUATED').slice(0, 15);
   
   console.log('[TokenFeedTabs] Filters: new=', newTokens.length, 'pregrad=', preGradTokens.length, 'graduated=', graduatedTokens.length);
 
@@ -118,26 +118,34 @@ export default function TokenFeedTabs() {
             </p>
           )}
 
-          {/* Token Mint */}
-          <div className="bg-slate-900/50 p-2 rounded mb-3">
-            <p className="text-xs text-slate-500">Mint</p>
-            <p className="text-xs font-mono text-blue-400 break-all">{token.tokenMint.slice(0, 20)}...</p>
-          </div>
+           {/* Token Mint */}
+           <div className="bg-slate-900/50 p-2 rounded mb-3">
+             <p className="text-xs text-slate-500">Mint</p>
+             <p className="text-xs font-mono text-blue-400 break-all">{token.tokenMint.slice(0, 20)}...</p>
+           </div>
 
-          {/* Status Badge */}
-          {token.status && (
-            <div className="mb-3">
-              <span className={`text-xs px-2 py-1 rounded ${
-                token.status === 'MIGRATED'
-                  ? 'bg-green-900/50 text-green-400'
-                  : token.status === 'PRE_GRAD'
-                  ? 'bg-yellow-900/50 text-yellow-400'
-                  : 'bg-blue-900/50 text-blue-400'
-              }`}>
-                {token.status}
-              </span>
-            </div>
-          )}
+           {/* Holder Count */}
+           {token.holders !== undefined && (
+             <div className="bg-slate-900/50 p-2 rounded mb-3">
+               <p className="text-xs text-slate-500">Holders</p>
+               <p className="text-xs font-mono text-purple-400">{token.holders.toLocaleString()}</p>
+             </div>
+           )}
+
+           {/* Status Badge */}
+           {token.status && (
+             <div className="mb-3">
+               <span className={`text-xs px-2 py-1 rounded ${
+                 token.status === 'GRADUATED'
+                   ? 'bg-green-900/50 text-green-400'
+                   : token.status === 'PRE_GRAD'
+                   ? 'bg-yellow-900/50 text-yellow-400'
+                   : 'bg-blue-900/50 text-blue-400'
+               }`}>
+                 {token.status}
+               </span>
+             </div>
+           )}
 
           {/* Links */}
           <div className="flex gap-2 pt-2 border-t border-slate-700">

@@ -93,8 +93,14 @@ export default function LaunchedFeed() {
 
   return (
     <div className="space-y-12">
-      {/* Top Section: All Launched Tokens */}
+      {/* Top Section: Token Feed by Status (MOVED TO TOP) */}
       <div>
+        <h2 className="text-2xl font-bold mb-6">📊 Token Feed by Status</h2>
+        <TokenFeedTabs />
+      </div>
+
+      {/* Divider */}
+      <div className="border-t border-slate-700 pt-12">
         <h2 className="text-2xl font-bold mb-6">🎉 Recently Launched</h2>
         {loading ? (
           <div className="flex items-center justify-center py-12">
@@ -214,15 +220,7 @@ export default function LaunchedFeed() {
             ))}
           </div>
         )}
-      </div>
-
-      {/* Divider */}
-      <div className="border-t border-slate-700 pt-12">
-        <h2 className="text-2xl font-bold mb-6">📊 Token Feed by Status</h2>
-        
-        {/* Bottom Section: Token Feed Tabs with Real-Time Data */}
-        <TokenFeedTabs />
-      </div>
-    </div>
-  );
+       </div>
+     </div>
+   );
 }

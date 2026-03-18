@@ -34,20 +34,43 @@ export async function GET() {
       return NextResponse.json({ response: [] });
     }
 
-    // Filter to only first 20 tokens and only needed fields (strip unnecessary bloat)
-    const filteredTokens = tokens.slice(0, 20).map((token: any) => ({
-      name: token.name || '',
-      symbol: token.symbol || '',
-      description: token.description || '',
-      image: token.image || '',
-      tokenMint: token.tokenMint || token.mint || '',
-      status: token.status || 'LAUNCHED',
-      twitter: token.twitter || '',
-      website: token.website || '',
-      launchSignature: token.launchSignature || token.signature || '',
-    }));
+    // Filter to only first 50 tokens and categorize by holder count
+    const filteredTokens = tokens.slice(0, 50).map((token: any) => {
+      // Determine status based on holder count
+      const holders = token.holders || 0;
+      let status = 'NEW_LAUNCH';
+      
+      if (holders >= 1000) {
+        status = 'GRADUATED'; // Graduated: 1000+ holders
+      } else if (holders >= 100) {
+        status = 'PRE_GRAD'; // About to graduate: 100-999 holders
+      } else {
+        status = 'NEW_LAUNCH'; // New launches: < 100 holders
+      }
+      
+      return {
+        name: token.name || '',
+        symbol: token.symbol || '',
+        description: token.description || '',
+        image: token.image || '',
+        tokenMint: token.tokenMint || token.mint || '',
+        status: status,
+        holders: holders,
+        volume24h: token.volume24h || 0,
+        twitter: token.twitter || '',
+        website: token.website || '',
+        launchSignature: token.launchSignature || token.signature || '',
+        createdAt: token.createdAt || '',
+      };
+    });
 
     console.log('[launch-feed] Returning filtered tokens:', filteredTokens.length);
+    
+    // Log the breakdown by status
+    const newCount = filteredTokens.filter(t => t.status === 'NEW_LAUNCH').length;
+    const preGradCount = filteredTokens.filter(t => t.status === 'PRE_GRAD').length;
+    const graduatedCount = filteredTokens.filter(t => t.status === 'GRADUATED').length;
+    console.log(`[launch-feed] Status breakdown - New: ${newCount}, PreGrad: ${preGradCount}, Graduated: ${graduatedCount}`);
 
     return NextResponse.json({ response: filteredTokens });
   } catch (e) {
